@@ -4,21 +4,22 @@ import inspect
 from collections import OrderedDict
 from repocket.attributes import Attribute, AutoUUID
 from repocket.errors import RepocketModelDefinitionError
-
+from repocket.manager import ModelManager
 MODELS = OrderedDict()
 
 
 class ModelRegistry(type):
     def __init__(ModelClass, name, bases, members):
-        module = inspect.getmodule(ModelClass)
-        module_name = module.__name__
+        module_name = ModelClass.__module__
         model_name = ModelClass.__name__
 
-        if model_name == 'Model' and module_name == 'repocket':
+        if model_name == 'Model' and module_name == 'repocket.model':
+            super(ModelRegistry, ModelClass).__init__(name, bases, members)
             return
 
         attrs = ModelClass.configure_fields(members)
-        type.__init__(ModelClass, name, bases, attrs)
+        super(ModelRegistry, ModelClass).__init__(name, bases, attrs)
+        ModelClass.objects = ModelManager(ModelClass)
         MODELS[name] = ModelClass
 
     def configure_fields(ModelClass, members):

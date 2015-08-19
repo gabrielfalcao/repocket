@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import json
+import importlib
+
+from datetime import datetime
 from uuid import uuid1, UUID
 
 
@@ -22,21 +25,34 @@ class Attribute(object):
     def from_string(self, value):
         return self.cast(value)
 
-    def cast(self, value):
+    @classmethod
+    def cast(cls, value):
         """Casts the attribute value as the defined __base_type__."""
-        return self.__base_type__(value)
+        return cls.__base_type__(value)
 
     def to_python(self, value):
         """
         Returns a json-safe, serialiazed version of the attribute
         """
         return {
-            'type': '.'.join([
-                __name__,
-                self.__class__.__name__
-            ]),
+            'module': self.__class__.__module__,
+            'type': self.__class__.__name__,
             'value': self.to_string(value)
         }
+
+    @classmethod
+    def from_python(cls, data):
+        type_name = data['type']
+        module_name = data['module']
+        raw_value = data['value']
+        module = importlib.import_module(module_name)
+        attribute = getattr(module, type_name)
+        return attribute.cast(raw_value)
+
+    @classmethod
+    def from_json(cls, raw_value):
+        value = json.loads(raw_value)
+        return cls.from_python(value)
 
     def to_json(self, value):
         return json.dumps(self.to_python(value))
@@ -72,3 +88,32 @@ class JSON(Unicode):
     retrieving.
     ``__base_type__ = unicode``
     """
+
+
+class DateTime(Attribute):
+    """Repocket treats its models and attributes as fully serializable.
+    Every attribute contains a ``to_python`` method that knows how to
+    serialize the type safely.
+
+    """
+    __base_type__ = bytes
+
+    def __init__(self, auto_now=False, null=False):
+        super(DateTime, self).__init__(null=null)
+        self.auto_now = False
+
+    def generate(self):
+        return datetime.utcnow().isoformat()
+
+
+class Pointer(Attribute):
+    """Think of it as a soft foreign key.
+
+    This will automatically store the unique id of the target model
+    and automatically retrieves it for you.
+    """
+    __base_type__ = None
+
+    def __init__(self, to_model, null=False):
+        super(Pointer, self).__init__(null=null)
+        self.__base_type__ = to_model
