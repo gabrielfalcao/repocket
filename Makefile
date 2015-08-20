@@ -1,5 +1,11 @@
 all: test
 
+ifeq ($(OSNAME), Linux)
+OPEN_COMMAND		:= gnome-open
+else
+OPEN_COMMAND		:= open
+endif
+
 test: clean unit functional documentation
 
 deps:
@@ -21,3 +27,4 @@ release: clean
 
 documentation:
 	cd docs && make html
+	$(OPEN_COMMAND) docs/build/html/index.html

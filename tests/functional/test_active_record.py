@@ -2,20 +2,20 @@
 
 from __future__ import unicode_literals
 import uuid
-from repocket.model import Model
+from repocket.model import ActiveRecord
 from repocket import attributes
 
 from .helpers import clean_slate
 
 
-class User(Model):
+class User(ActiveRecord):
     id = attributes.AutoUUID()
     access_token = attributes.Bytes()
     email = attributes.Unicode()
     github_metadata = attributes.JSON()
 
 
-class BlogPost(Model):
+class BlogPost(ActiveRecord):
     id = attributes.AutoUUID()
     author = attributes.Pointer(User)
     created_at = attributes.DateTime(auto_now=True)
@@ -25,7 +25,7 @@ class BlogPost(Model):
 
 @clean_slate
 def test_save_user(context):
-    ('Model.save() should store the the fields successfully in a hash')
+    ('ActiveRecord.save() should store the the fields successfully in a hash')
 
     # Given that I instantiate a user
     obj1 = User(
@@ -50,7 +50,7 @@ def test_save_user(context):
 
 @clean_slate
 def test_object_manager_all(context):
-    ('Model.objects.all() should return all the saved items of the same kind')
+    ('ActiveRecord.objects.all() should return all the saved items of the same kind')
 
     # Given 3 users
     User(email='1@test.com').save()
@@ -77,7 +77,7 @@ def test_object_manager_all(context):
 
 @clean_slate
 def test_object_manager_filter(context):
-    ('Model.objects.filter() should return a list of filtered items')
+    ('ActiveRecord.objects.filter() should return a list of filtered items')
 
     # Given 3 users
     User(email='one@test.com').save()
@@ -102,7 +102,7 @@ def test_object_manager_filter(context):
 
 @clean_slate
 def test_object_manager_get(context):
-    ('Model.objects.get() should return an item')
+    ('ActiveRecord.objects.get() should return an item')
 
     # Given a user
     user1_uuid = uuid.uuid1()

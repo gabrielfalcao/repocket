@@ -6,7 +6,7 @@ from repocket.attributes import Attribute
 logger = logging.getLogger('repocket.manager')
 
 
-class ModelManager(object):
+class ActiveRecordManager(object):
     def __init__(self, model):
         self.model = model
 
@@ -24,7 +24,7 @@ class ModelManager(object):
         """Lists all items in redis, returns instances of the adopted model.
         ::
 
-            class BlogPost(Model):
+            class BlogPost(ActiveRecord):
                 created_at = attributes.DateTime(auto_now=True)
                 title = attributes.Unicode()
                 text = attributes.Unicode()

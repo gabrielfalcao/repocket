@@ -3,14 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Repocket's documentation!
-====================================
+Repocket - A Redis Active-Record that fits in your pocket
+=========================================================
 
-Contents:
+Repocket is an active-record for python that is completely inspired in
+the API of CQLEngine, which is seemingly inspired in the Django ORM
+API.
+
+Repocket is also a very small library and you will master it in a
+second.
+
 
 .. toctree::
    :maxdepth: 2
 
+   getting-started
    internals
 
 Indices and tables

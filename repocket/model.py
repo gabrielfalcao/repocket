@@ -1,14 +1,14 @@
 import uuid
 from repocket.connections import configure
-from repocket.registry import ModelRegistry
+from repocket.registry import ActiveRecordRegistry
 
 
-class Model(object):
+class ActiveRecord(object):
     """base model class, this is how you declare your active record.
 
     ::
 
-        class User(Model):
+        class User(ActiveRecord):
             id = attributes.AutoUUID()
             github_access_token = attributes.Bytes()
             name = attributes.Unicode()
@@ -30,7 +30,7 @@ class Model(object):
         raw_results = connection.hgetall(key)
     """
 
-    __metaclass__ = ModelRegistry
+    __metaclass__ = ActiveRecordRegistry
 
     def __init__(self, *args, **kw):
         for attribute, value in kw.iteritems():
@@ -59,7 +59,7 @@ class Model(object):
 
         ::
 
-            repocket:python_module_contaning_your_model:YourModelClassName
+            repocket:python_module_contaning_your_model:YourActiveRecordClassName
 
         Repocket automatically assigns a UUID1 as the ``id`` of your model, after set, the id itself is used to compose the redis key.
 
