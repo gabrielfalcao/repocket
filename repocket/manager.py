@@ -13,7 +13,10 @@ class ActiveRecordManager(object):
         self.model = model
 
     def get(self, id):
-        prefix = self.model()._calculate_key_prefix()
+        instance = self.model()
+        instance.set(instance.__primary_key__, id)
+
+        prefix = instance._calculate_key_prefix()
         redis_key = ':'.join([prefix, str(id)])
         return self.get_item_from_redis_key(redis_key)
 
@@ -35,7 +38,7 @@ class ActiveRecordManager(object):
 
         """
         conn = connection or configure.get_connection()
-        prefix = self.model()._calculate_key_prefix()
+        prefix = self.model._static_key_prefix()
         search_pattern = ':'.join([prefix, '*'])
         keys = conn.keys(search_pattern)
         items = [self.get_item_from_redis_key(k) for k in keys]
@@ -51,7 +54,7 @@ class ActiveRecordManager(object):
     def get_item_from_redis_key(self, key, connection=None):
         conn = connection or configure.get_connection()
         raw = self.get_raw_dict_from_redis(key)
-        if raw is None:
+        if not raw:
             return
 
         data = self.deserialize_raw_item(raw)

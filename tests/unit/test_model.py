@@ -12,9 +12,9 @@ class UnitModelOne(ActiveRecord):
 def test_active_record_calculate_key_prefix():
     ('ActiveRecord#_calculate_key_prefix should return a prefix based on the module name')
 
-    item = UnitModelOne()
+    item = UnitModelOne(id='123456')
     result = item._calculate_key_prefix()
-    result.should.equal('repocket:repocket.model:UnitModelOne')
+    result.should.equal('repocket:repocket.model:UnitModelOne:123456')
 
 
 def test_active_record_calculate_key_for_field():

@@ -43,9 +43,10 @@ class Attribute(object):
         """
         Returns a json-safe, serialiazed version of the attribute
         """
+        cls = type(self)
         return {
-            'module': self.__class__.__module__,
-            'type': self.__class__.__name__,
+            'module': cls.__module__,
+            'type': cls.__name__,
             'value': self.to_string(value)
         }
 

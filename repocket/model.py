@@ -1,5 +1,5 @@
 import uuid
-from collections import OrderedDict
+
 from repocket import attributes
 from repocket.connections import configure
 from repocket.registry import ActiveRecordRegistry
@@ -40,16 +40,22 @@ class ActiveRecord(object):
             value = kw.get(attribute, default) or default
             self.set(attribute, value)
 
-    def _calculate_key_prefix(self):
+    @classmethod
+    def _static_key_prefix(cls):
         return b'repocket:{0}:{1}'.format(
-            self.__class__.__module__,
-            self.__class__.__name__,
+            cls.__module__,
+            cls.__name__,
+        )
+
+    def _calculate_key_prefix(self):
+        return b'{0}:{1}'.format(
+            self._static_key_prefix(),
+            str(getattr(self, self.__primary_key__)),
         )
 
     def _calculate_key_for_field(self, name):
         return b':'.join([
             self._calculate_key_prefix(),
-            str(getattr(self, self.__primary_key__)),
             'field',
             name,
         ])
@@ -60,13 +66,16 @@ class ActiveRecord(object):
             self._primary_key,
         ])
 
-    def _set_primary_key(self):
-        if self.get(self.__primary_key__):
+    def _set_primary_key(self, value=None):
+        if self._get_primary_key():
             # already set, carry on
             return
 
         value = str(uuid.uuid1())
         self.set(self.__primary_key__, value)
+
+    def _get_primary_key(self):
+        return self.get(self.__primary_key__)
 
     @property
     def _key_prefix(self):
@@ -165,7 +174,6 @@ class ActiveRecord(object):
             redis_keys['strings'][name] = redis_string_key
             pipeline = pipeline.set(redis_string_key, value)
 
-            # import ipdb;ipdb.set_trace()
         pipeline.execute()
         return redis_keys
 
