@@ -1,4 +1,6 @@
 import uuid
+from collections import OrderedDict
+from repocket import attributes
 from repocket.connections import configure
 from repocket.registry import ActiveRecordRegistry
 
@@ -33,7 +35,9 @@ class ActiveRecord(object):
     __metaclass__ = ActiveRecordRegistry
 
     def __init__(self, *args, **kw):
-        for attribute, value in kw.iteritems():
+        for attribute, field in self.__fields__.items():
+            default = field.get_empty_value()
+            value = kw.get(attribute, default) or default
             self.set(attribute, value)
 
     def _calculate_key_prefix(self):
@@ -41,6 +45,20 @@ class ActiveRecord(object):
             self.__class__.__module__,
             self.__class__.__name__,
         )
+
+    def _calculate_key_for_field(self, name):
+        return b':'.join([
+            self._calculate_key_prefix(),
+            str(getattr(self, self.__primary_key__)),
+            'field',
+            name,
+        ])
+
+    def _calculate_hash_key(self):
+        return b':'.join([
+            self._key_prefix,
+            self._primary_key,
+        ])
 
     def _set_primary_key(self):
         if self.get(self.__primary_key__):
@@ -79,39 +97,77 @@ class ActiveRecord(object):
     def _primary_key(self):
         return self.get(self.__primary_key__)
 
+    def append_to_bytestream(self, field_name, value):
+        redis_key = self._calculate_key_for_field(field_name)
+        conn = configure.get_connection()
+        conn.append(redis_key, value)
+
+        old_value = getattr(self, field_name) or ''
+        new_value = bytes(old_value) + bytes(value)
+        setattr(self, field_name, new_value)
+        return redis_key
+
     def get(self, attribute, fallback=None):
         return getattr(self, attribute, fallback)
 
-    def set(self, attribute, value):
-        if attribute not in self.__fields__:
+    def set(self, field_name, value):
+        field = self.__fields__.get(field_name)
+        if not field:
             tmpl = 'attempt to set unexisting field "{0}" in the model {1}.{2}'
-            msg = tmpl.format(attribute, self.__class__.__module__, self.__class__.__name__)
+            msg = tmpl.format(field_name, self.__class__.__module__, self.__class__.__name__)
             raise AttributeError(msg)
 
-        setattr(self, attribute, value)
+        if isinstance(field, attributes.ByteStream):
+            old_value = getattr(self, field_name, bytes()) or bytes()
+            value = bytes(old_value) + bytes(value)
+
+        setattr(self, field_name, value)
 
     def to_dict(self):
-        data = {}
+        data = {
+            # the "hash" key contains the main attributes, but special
+            # attributes like ByteStream get translated into other
+            # redis data types, which also require special keys,
+            # that's why the data is separated before serialized
+            'hash': {},
+            # the "strings" key contains all the attributes that are
+            # of the type "string"
+            'strings': {},
+        }
         for name, field in self.__fields__.items():
-            value = getattr(self, name, None)
+            value = getattr(self, name, field.get_empty_value())
             if not value:
                 continue
 
             serialized_value = field.to_json(value)
-            data[name] = serialized_value
+
+            if isinstance(field, attributes.ByteStream):
+                data['strings'][name] = value
+            else:
+                data['hash'][name] = serialized_value
 
         return data
 
     def save(self):
         self._set_primary_key()
-        redis_hash_key = b':'.join([
-            self._key_prefix,
-            self._primary_key,
-        ])
+        redis_hash_key = self._calculate_hash_key()
+
         conn = configure.get_connection()
         data = self.to_dict()
-        conn.hmset(redis_hash_key, data)
-        return redis_hash_key
+        pipeline = conn.pipeline()
+        pipeline = pipeline.hmset(redis_hash_key, data['hash'])
+        redis_keys = {
+            'hash': redis_hash_key,
+            'strings': {}
+        }
+        for name, value in data['strings'].items():
+            redis_string_key = self._calculate_key_for_field(name)
+            redis_keys['strings'][name] = redis_string_key
+            pipeline = pipeline.set(redis_string_key, value)
+
+            # import ipdb;ipdb.set_trace()
+        pipeline.execute()
+        return redis_keys
 
     def matches(self, kw):
         matched = False

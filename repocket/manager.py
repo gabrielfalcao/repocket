@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 
 from repocket.connections import configure
@@ -46,13 +48,20 @@ class ActiveRecordManager(object):
         except Exception:
             logger.exception('Failed to retrieve key')
 
-    def get_item_from_redis_key(self, key):
+    def get_item_from_redis_key(self, key, connection=None):
+        conn = connection or configure.get_connection()
         raw = self.get_raw_dict_from_redis(key)
         if raw is None:
             return
 
         data = self.deserialize_raw_item(raw)
-        return self.model(**data)
+        instance = self.model(**data)
+        for field_name, field in self.model.__string_fields__.items():
+            string_key = instance._calculate_key_for_field(field_name)
+            value = conn.get(string_key)
+            instance.set(field_name, value)
+
+        return instance
 
     def deserialize_raw_item(self, raw_item):
         data = {}

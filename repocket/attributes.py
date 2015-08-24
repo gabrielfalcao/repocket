@@ -14,6 +14,7 @@ class Attribute(object):
 
     """
     __base_type__ = bytes
+    __empty_value__ = b''
 
     def __init__(self, null=False):
         self.can_be_null = null
@@ -24,6 +25,14 @@ class Attribute(object):
 
     def from_string(self, value):
         return self.cast(value)
+
+    @classmethod
+    def get_base_type(cls, value):
+        """Returns the __base_type__"""
+        return cls.__base_type__
+
+    def get_empty_value(cls):
+        return cls.__empty_value__
 
     @classmethod
     def cast(cls, value):
@@ -73,6 +82,7 @@ class Unicode(Attribute):
     ``__base_type__ = unicode``
     """
     __base_type__ = unicode
+    __empty_value__ = u''
 
 
 class Bytes(Attribute):
@@ -80,6 +90,7 @@ class Bytes(Attribute):
     ``__base_type__ = bytes``
     """
     __base_type__ = bytes
+    __empty_value__ = b''
 
 
 class JSON(Unicode):
@@ -97,6 +108,8 @@ class DateTime(Attribute):
 
     """
     __base_type__ = bytes
+    __empty_value__ = datetime.utcnow
+
 
     def __init__(self, auto_now=False, null=False):
         super(DateTime, self).__init__(null=null)
@@ -113,7 +126,16 @@ class Pointer(Attribute):
     and automatically retrieves it for you.
     """
     __base_type__ = None
+    __empty_value__ = None
 
     def __init__(self, to_model, null=False):
         super(Pointer, self).__init__(null=null)
         self.__base_type__ = to_model
+
+
+class ByteStream(Attribute):
+    """Handles bytes that will be stored as a string in redis
+    ``__base_type__ = bytes``
+    """
+    __base_type__ = bytes
+    __empty_value__ = b''

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import inspect
+
 from collections import OrderedDict
-from repocket.attributes import Attribute, AutoUUID
+from repocket.attributes import Attribute, AutoUUID, ByteStream
 from repocket.errors import RepocketActiveRecordDefinitionError
 from repocket.manager import ActiveRecordManager
 MODELS = OrderedDict()
@@ -23,8 +23,10 @@ class ActiveRecordRegistry(type):
         MODELS[name] = ActiveRecordClass
 
     def configure_fields(ActiveRecordClass, members):
-        fields = OrderedDict()
+        hash_fields = OrderedDict()
+        string_fields = OrderedDict()
         primary_key_attribute = None
+
         for attribute, value in members.items():
             if isinstance(value, AutoUUID):
                 if primary_key_attribute is not None:
@@ -36,19 +38,25 @@ class ActiveRecordRegistry(type):
                     ))
 
                 primary_key_attribute = attribute
-                fields[attribute] = value
 
-            elif isinstance(value, Attribute):
-                fields[attribute] = value
+            elif isinstance(value, ByteStream):
+                field_name = str(attribute)
+                string_fields[field_name] = value
+                append_method_name = 'append_{0}'.format(attribute)
+                setattr(ActiveRecordClass, append_method_name, lambda self, string_value: ActiveRecordClass.append_to_bytestream(self, field_name, string_value))
+
+            if isinstance(value, Attribute):
+                hash_fields[str(attribute)] = value
 
             members.pop(attribute)
             delattr(ActiveRecordClass, attribute)
 
         if primary_key_attribute is None:
             primary_key_attribute = 'id'
-            fields['id'] = AutoUUID()
+            hash_fields['id'] = AutoUUID()
 
-        ActiveRecordClass.__fields__ = fields
+        ActiveRecordClass.__fields__ = hash_fields
+        ActiveRecordClass.__string_fields__ = string_fields
         ActiveRecordClass.__primary_key__ = primary_key_attribute
 
         return members

@@ -20,7 +20,7 @@ class BlogPost(ActiveRecord):
     author = attributes.Pointer(User)
     created_at = attributes.DateTime(auto_now=True)
     title = attributes.Unicode()
-    body = attributes.Unicode()
+    body = attributes.ByteStream()
 
 
 @clean_slate
@@ -36,7 +36,8 @@ def test_save_user(context):
         }
     )
 
-    key = obj1.save()
+    keys = obj1.save()
+    key = keys['hash']
 
     result = context.connection.hgetall(key)
     result.should.be.a(dict)
@@ -117,3 +118,52 @@ def test_object_manager_get(context):
 
     # Then it should return a user
     result.should.be.a(User)
+
+
+@clean_slate
+def test_bytestream(context):
+    ('A model that contains a ByteStream should '
+     'store the attribute value in a separate '
+     'redis key that contains a string')
+
+    post = BlogPost(
+        body='the initial content\n'
+    )
+
+    keys = post.save()
+
+    body_key = keys['strings']['body']
+    body_key.should.equal('repocket:repocket.model:BlogPost:{0}:field:body'.format(post.id))
+    context.connection.get(body_key).should.equal(
+        'the initial content\n'
+    )
+    post.body.should.equal(
+        'the initial content\n'
+    )
+
+
+@clean_slate
+def test_bytestream_append(context):
+    ('A model should provide a `field_append()` method where `field` is a ByteStream')
+
+    post = BlogPost(
+        body='the initial content\n'
+    )
+    post.save()
+    post.should.have.property('append_body').being.a('types.MethodType')
+
+    body_key = post.append_body("more content\n")
+
+    body_key.should.equal('repocket:repocket.model:BlogPost:{0}:field:body'.format(post.id))
+    context.connection.get(body_key).should.equal(
+        'the initial content\nmore content\n'
+    )
+    post.body.should.equal(
+        'the initial content\nmore content\n'
+    )
+
+    result = BlogPost.objects.get(id=post.id)
+    result.should.be.a(BlogPost)
+    result.body.should.equal(
+        'the initial content\nmore content\n'
+    )

@@ -11,9 +11,9 @@ records with a pointer from one to the other.
 
 ::
 
-    class User(ActiveRecord):
+    class Builder(ActiveRecord):
         id = attributes.AutoUUID()
-        access_token = attributes.Bytes()
+        name
         email = attributes.Unicode()
         github_metadata = attributes.JSON()
 
@@ -23,4 +23,4 @@ records with a pointer from one to the other.
         author = attributes.Pointer(User)
         created_at = attributes.DateTime(auto_now=True)
         title = attributes.Unicode()
-        body = attributes.Unicode()
+        body = attributes.ByteStream()
