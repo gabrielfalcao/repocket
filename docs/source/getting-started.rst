@@ -3,24 +3,34 @@
 Getting Started
 ===============
 
-No more tease; here is a full example of how to declare 2 active
-records with a pointer from one to the other.
+Repocket is an active record that let's you use redis as main data
+store.
+
+Redis is commonly seen as a ephemeral, cache-purposed in-memory database.
+
+But the reality is that redis is a data structure server.
+
+In the same way that python has the ``int``, ``float``, ``unicode``,
+``list``, ``set`` and ``dict`` builtin types, redis has equivalent
+datastructures, and some really cool functions to manipulate them in
+an optimized way.
+
+Repocket lets you declare your models in a Django-fashioned way.
 
 
 .. highlight: python
 
 ::
 
-    class Builder(ActiveRecord):
-        id = attributes.AutoUUID()
-        name
-        email = attributes.Unicode()
-        github_metadata = attributes.JSON()
+    class Project(ActiveRecord):
+        name = attributes.Unicode()
+        git_uri = attributes.Bytes()
 
 
-    class BlogPost(ActiveRecord):
+    class Build(ActiveRecord):
         id = attributes.AutoUUID()
-        author = attributes.Pointer(User)
-        created_at = attributes.DateTime(auto_now=True)
-        title = attributes.Unicode()
-        body = attributes.ByteStream()
+        project = attributes.Pointer(Project)
+        started_at = attributes.DateTime()
+        ended_at = attributes.DateTime()
+        stdout = attributes.ByteStream()
+        stderr = attributes.ByteStream()
