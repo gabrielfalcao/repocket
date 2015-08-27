@@ -69,7 +69,16 @@ class ActiveRecordManager(object):
     def deserialize_raw_item(self, raw_item):
         data = {}
         for key, raw_value in raw_item.iteritems():
-            value = Attribute.from_json(raw_value)
+            try:
+                value = Attribute.from_json(raw_value)
+            except TypeError as e:
+                logger.error('Failed to deserialize field {0}.{1} because: {2}'.format(
+                    self.model.__class__.__name__,
+                    key,
+                    str(e)
+                ))
+                raise
+
             data[key] = value
 
         return data

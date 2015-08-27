@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 import uuid
+from datetime import datetime
 from repocket.model import ActiveRecord
 from repocket import attributes
 
@@ -133,7 +134,7 @@ def test_bytestream(context):
     keys = post.save()
 
     body_key = keys['strings']['body']
-    body_key.should.equal('repocket:repocket.model:BlogPost:{0}:field:body'.format(post.id))
+    body_key.should.equal('repocket:tests.functional.test_active_record:BlogPost:{0}:field:body'.format(post.id))
     context.connection.get(body_key).should.equal(
         'the initial content\n'
     )
@@ -154,7 +155,7 @@ def test_bytestream_append(context):
 
     body_key = post.append_body("more content\n")
 
-    body_key.should.equal('repocket:repocket.model:BlogPost:{0}:field:body'.format(post.id))
+    body_key.should.equal('repocket:tests.functional.test_active_record:BlogPost:{0}:field:body'.format(post.id))
     context.connection.get(body_key).should.equal(
         'the initial content\nmore content\n'
     )
@@ -167,3 +168,77 @@ def test_bytestream_append(context):
     result.body.should.equal(
         'the initial content\nmore content\n'
     )
+
+
+@clean_slate
+def test_pointer_saves_reference(context):
+    ('Saving a Pointer attribute should store a reference to the model')
+
+    author = User(
+        id='b9c9bf17-ef60-45bf-8217-4daabc6bc483',
+        email='foo@bar.com',
+    )
+    author.save()
+    post = BlogPost(
+        body='the initial content\n',
+        author=author
+    )
+    keys = post.save()
+
+    key = keys['hash']
+    result = context.connection.hgetall(key)
+
+    result.should.have.key('author').being.equal(
+        '{"type": "Pointer", "value": "repocket:tests.functional.test_active_record:User:b9c9bf17-ef60-45bf-8217-4daabc6bc483", "module": "repocket.attributes"}'
+    )
+
+    post.author.should.equal(author)
+
+
+@clean_slate
+def test_comparing_two_models(context):
+    ('Two models should be comparable from by their json output')
+
+    author1 = User(
+        id='b9c9bf17-ef60-45bf-8217-4daabc6bc483',
+        email='foo@bar.com',
+    )
+    post1 = BlogPost(
+        body='the initial content\n',
+        author=author1,
+        created_at=datetime(2015, 2, 25),
+    )
+
+    author2 = User(
+        id='b9c9bf17-ef60-45bf-8217-4daabc6bc483',
+        email='foo@bar.com',
+    )
+    post2 = BlogPost(
+        body='the initial content\n',
+        author=author2,
+        created_at=datetime(2015, 2, 25),
+    )
+
+    author1.should.equal(author2)
+    post1.should.equal(post2)
+
+
+@clean_slate
+def test_get_retrieving_reference(context):
+    ('Retrieving an object through manager.get() should also retrieve the references')
+
+    author = User(
+        id='b9c9bf17-ef60-45bf-8217-4daabc6bc483',
+        email='foo@bar.com',
+    )
+    author.save()
+    post = BlogPost(
+        body='the initial content\n',
+        author=author,
+        created_at=datetime(2015, 2, 25),
+    )
+
+    post.save()
+
+    result = BlogPost.objects.get(id=post.id)
+    result.should.equal(post)

@@ -2,9 +2,13 @@
 from __future__ import unicode_literals
 import json
 import importlib
+import dateutil.parser
 
 from datetime import datetime
-from uuid import uuid1, UUID
+from uuid import UUID
+from repocket._cache import MODELS
+
+from repocket.connections import configure
 
 
 class Attribute(object):
@@ -27,11 +31,15 @@ class Attribute(object):
         return self.cast(value)
 
     @classmethod
-    def get_base_type(cls, value):
+    def get_base_type(cls):
         """Returns the __base_type__"""
         return cls.__base_type__
 
     def get_empty_value(cls):
+        if callable(cls.__empty_value__):
+            return cls.__empty_value__()
+
+        # otherwise...
         return cls.__empty_value__
 
     @classmethod
@@ -74,8 +82,12 @@ class AutoUUID(Attribute):
     """
     __base_type__ = UUID
 
-    def generate(self):
-        return uuid1()
+    @classmethod
+    def cast(cls, value):
+        if isinstance(value, UUID):
+            return value
+
+        return super(AutoUUID, cls).cast(value)
 
 
 class Unicode(Attribute):
@@ -108,16 +120,22 @@ class DateTime(Attribute):
     serialize the type safely.
 
     """
-    __base_type__ = bytes
+    __base_type__ = datetime
     __empty_value__ = datetime.utcnow
-
 
     def __init__(self, auto_now=False, null=False):
         super(DateTime, self).__init__(null=null)
         self.auto_now = False
 
-    def generate(self):
-        return datetime.utcnow().isoformat()
+    @classmethod
+    def cast(cls, value):
+        if isinstance(value, datetime):
+            return value
+
+        return dateutil.parser.parse(value)
+
+    def to_string(self, value):
+        return self.cast(value).isoformat()
 
 
 class Pointer(Attribute):
@@ -132,6 +150,27 @@ class Pointer(Attribute):
     def __init__(self, to_model, null=False):
         super(Pointer, self).__init__(null=null)
         self.__base_type__ = to_model
+
+    def to_string(self, value):
+        if not value.get_id():
+            raise ReferenceError('The model {0} must be saved before serialized as a pointer in another model'.format(value))
+
+        return value._calculate_key_prefix()
+
+    @classmethod
+    def cast(cls, value):
+        """this method uses a redis connection to retrieve the referenced item"""
+        try:
+            _, module_name, model_name, model_uuid = value.split(':')
+        except ValueError:
+            raise ValueError('the given value is not a valid repocket reference: {0}'.format(value))
+
+        compound_name = '.'.join([module_name, model_name])
+        Model = MODELS.get(compound_name, None)
+        if not Model:
+            raise ReferenceError('The model {0} is not available in repocket. Make sure that you imported it'.format(compound_name))
+
+        return Model.objects.get(**{Model.__primary_key__: model_uuid})
 
 
 class ByteStream(Attribute):

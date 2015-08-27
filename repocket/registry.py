@@ -5,7 +5,7 @@ from collections import OrderedDict
 from repocket.attributes import Attribute, AutoUUID, ByteStream
 from repocket.errors import RepocketActiveRecordDefinitionError
 from repocket.manager import ActiveRecordManager
-MODELS = OrderedDict()
+from repocket._cache import MODELS
 
 
 class ActiveRecordRegistry(type):
@@ -17,10 +17,15 @@ class ActiveRecordRegistry(type):
             super(ActiveRecordRegistry, ActiveRecordClass).__init__(name, bases, members)
             return
 
-        attrs = ActiveRecordClass.configure_fields(members)
-        super(ActiveRecordRegistry, ActiveRecordClass).__init__(name, bases, attrs)
+        module_name = ActiveRecordClass.__module__
+        model_name = ActiveRecordClass.__name__
+        compound_name = '.'.join([module_name, model_name])
+        super(ActiveRecordRegistry, ActiveRecordClass).__init__(name, bases, members)
+        ActiveRecordClass.configure_fields(members)
         ActiveRecordClass.objects = ActiveRecordManager(ActiveRecordClass)
-        MODELS[name] = ActiveRecordClass
+        ActiveRecordClass.__namespace__ = str(module_name)
+        ActiveRecordClass.__compound_name__ = compound_name
+        MODELS[compound_name] = ActiveRecordClass
 
     def configure_fields(ActiveRecordClass, members):
         hash_fields = OrderedDict()

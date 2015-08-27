@@ -40,17 +40,30 @@ class ActiveRecord(object):
             value = kw.get(attribute, default) or default
             self.set(attribute, value)
 
+    def __repr__(self):
+        attributes = ', '.join(['{0}={1}'.format(k, v) for k, v in self.to_dict().items()])
+        return '{0}({1})'.format(self.__compound_name__, attributes)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError('Cannot compare {0} with {1}'.format(self, other))
+
+        return self.to_dict() == other.to_dict()
+
     @classmethod
     def _static_key_prefix(cls):
         return b'repocket:{0}:{1}'.format(
-            cls.__module__,
+            cls.__namespace__,
             cls.__name__,
         )
+
+    def get_id(self):
+        return getattr(self, self.__primary_key__, None)
 
     def _calculate_key_prefix(self):
         return b'{0}:{1}'.format(
             self._static_key_prefix(),
-            str(getattr(self, self.__primary_key__)),
+            str(self.get_id()),
         )
 
     def _calculate_key_for_field(self, name):
@@ -148,7 +161,15 @@ class ActiveRecord(object):
             if not value:
                 continue
 
-            serialized_value = field.to_json(value)
+            try:
+                serialized_value = field.to_json(value)
+            except (AttributeError, TypeError):
+                raise TypeError('Failed to serialize field {0}.{1} of type {2} with value: {3}'.format(
+                    self.__class__.__name__,
+                    name,
+                    type(value),
+                    value
+                ))
 
             if isinstance(field, attributes.ByteStream):
                 data['strings'][name] = value
