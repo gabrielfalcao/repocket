@@ -242,3 +242,5 @@ def test_get_retrieving_reference(context):
 
     result = BlogPost.objects.get(id=post.id)
     result.should.equal(post)
+
+    post.author.should.equal(author)
