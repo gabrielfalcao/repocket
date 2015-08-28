@@ -1,4 +1,4 @@
-.. _installing:
+.. _tutorial:
 
 Tutorial
 ========
@@ -34,9 +34,9 @@ this is your own application code:
 
    from repocket.connections import configure
 
-   configure.connection_pool(hostname='myredis.cooldomain.com', port=6379, db=0)
 
-   # now you're ready to declare and use models
+   configure.connection_pool(hostname='myredis.cooldomain.com', port=6379, db=0)
+   # at this point you're ready to use your declared models
 
 
 
@@ -59,3 +59,17 @@ Here is how you declare a model:
        name = attributes.Unicode()
        email = attributes.Bytes()
        password = attributes.Bytes()
+
+
+If you were in Django you would then need to run ``syncdb`` to have a
+SQL table called ``User`` with the declared fields. But *this ain't
+Django, ight?*
+
+At this point you are ready to start saving user data in redis.
+
+By default the attributes of the your model are actively saved in a
+``hash`` redis datastructure.
+
+Repocket *currenty* also supports another attribute called
+``ByteStream`` that will seamlessly store the value in a string, so
+that you can ``APPEND`` more bytes to it with a single call.

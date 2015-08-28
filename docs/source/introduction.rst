@@ -42,6 +42,7 @@ Here is a full example with all the supported field types of repocket:
 .. highlight: python
 
 ::
+
     from repocket import attributes
     from repocket import ActiveRecord
 

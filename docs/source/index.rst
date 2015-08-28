@@ -18,6 +18,7 @@ second.
    :maxdepth: 2
 
    introduction
+   tutorial
    internals
 
 Indices and tables
