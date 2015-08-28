@@ -17,7 +17,7 @@ second.
 .. toctree::
    :maxdepth: 2
 
-   getting-started
+   introduction
    internals
 
 Indices and tables
