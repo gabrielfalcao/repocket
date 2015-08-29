@@ -49,7 +49,7 @@ Here is a full example with all the supported field types of repocket:
      class Project(ActiveRecord):
          name = attributes.Unicode()
          git_uri = attributes.Bytes()
-
+         metadata = attributes.JSON()
 
      class Build(ActiveRecord):
          id = attributes.AutoUUID()
@@ -58,7 +58,3 @@ Here is a full example with all the supported field types of repocket:
          ended_at = attributes.DateTime()
          stdout = attributes.ByteStream()
          stderr = attributes.ByteStream()
-
-
-The models above provide basic data structures to build a continuous
-integration with live stdout and stderr output.

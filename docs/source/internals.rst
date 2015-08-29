@@ -1,9 +1,7 @@
 .. _internals:
 
-##################
-Repocket Internals
-##################
-
+API Reference
+=============
 
 .. automodule:: repocket.attributes
    :members:
@@ -21,4 +19,7 @@ Repocket Internals
    :members:
 
 .. automodule:: repocket.registry
+   :members:
+
+.. automodule:: repocket._cache
    :members:

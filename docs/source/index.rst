@@ -19,7 +19,9 @@ second.
 
    introduction
    tutorial
+   serialization
    internals
+
 
 Indices and tables
 ==================

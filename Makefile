@@ -27,4 +27,4 @@ release: clean
 
 documentation:
 	cd docs && make html
-	$(OPEN_COMMAND) docs/build/html/index.html
+	#$(OPEN_COMMAND) docs/build/html/index.html
