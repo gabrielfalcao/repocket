@@ -157,19 +157,20 @@ Retrive multiple items with filter
           cannot be guaranteed because the id is a *uuid*.
           Use the ``.order_by()`` method
 
+..
 
-Ordering results
-^^^^^^^^^^^^^^^^
+    Ordering results
+    ^^^^^^^^^^^^^^^^
 
-The ``filter()`` method returns a ``ResultSet`` object, which is a
-list with superpowers. The main superpower is the ability to order the
-results.
+    The ``filter()`` method returns a ``ResultSet`` object, which is a
+    list with superpowers. The main superpower is the ability to order the
+    results.
 
 
-    >>> results = User.objects.filter(house_name='Griffindor').order_by('-name')
-    >>> len(results)
-    2
-    >>> results[0].name
-    'Ron Weasley'
-    >>> results[1].name
-    'Harry Potter'
+        >>> results = User.objects.filter(house_name='Griffindor').order_by('-name')
+        >>> len(results)
+        2
+        >>> results[0].name
+        'Ron Weasley'
+        >>> results[1].name
+        'Harry Potter'
