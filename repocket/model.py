@@ -75,8 +75,8 @@ class ActiveRecord(object):
 
     def _calculate_hash_key(self):
         return b':'.join([
-            self._key_prefix,
-            self._primary_key,
+            bytes(self._key_prefix),
+            bytes(self._primary_key),
         ])
 
     def _set_primary_key(self, value=None):
