@@ -34,14 +34,10 @@ Quick Usage
 ===========
 
 
-.. highlight:: bash
-
 ::
 
    $ pip install repocket
 
-
-.. highlight:: python
 
 
 Declare your models
