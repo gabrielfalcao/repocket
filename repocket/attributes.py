@@ -93,10 +93,18 @@ class AutoUUID(Attribute):
         return super(AutoUUID, cls).cast(value)
 
 
-class UUID(AutoUUID):
-    """Holds a valid ``uuid.UUID`` value
+class UUID(Attribute):
+    """Automatically assigns a uuid1 as the value.
     ``__base_type__ = uuid.UUID``
     """
+    __base_type__ = PythonsUUID
+
+    @classmethod
+    def cast(cls, value):
+        if isinstance(value, PythonsUUID):
+            return value
+
+        return super(UUID, cls).cast(value)
 
 
 class Unicode(Attribute):
