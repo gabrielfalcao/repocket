@@ -244,3 +244,22 @@ def test_get_retrieving_reference(context):
     result.should.equal(post)
 
     post.author.should.equal(author)
+
+
+@clean_slate
+def test_create_user(context):
+    ('ActiveRecord.create() should store the the fields successfully in a hash')
+
+    # Given that I instantiate create a user
+    result = User.create(
+        access_token=b'sometoken',
+        email='foo@bar.com',
+        github_metadata={
+            'yay': 'this is json baby!'
+        }
+    )
+
+    result.should.be.a(User)
+
+    found = User.objects.get(id=result.id)
+    found.should.equal(result)

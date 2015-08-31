@@ -51,6 +51,15 @@ class ActiveRecord(object):
         return self.to_dict() == other.to_dict()
 
     @classmethod
+    def create(cls, **kwargs):
+        """Takes all the valid attributes of an active record, saves it
+        immediately and returns the instance, ready for further manipulation.
+        """
+        item = cls(**kwargs)
+        item.save()
+        return item
+
+    @classmethod
     def _static_key_prefix(cls):
         return b'repocket:{0}:{1}'.format(
             cls.__namespace__,
