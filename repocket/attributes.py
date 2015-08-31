@@ -50,15 +50,20 @@ class Attribute(object):
         """Casts the attribute value as the defined __base_type__."""
         return cls.__base_type__(value)
 
-    def to_python(self, value):
+    def to_python(self, value, simple=False):
         """
         Returns a json-safe, serialiazed version of the attribute
         """
         cls = type(self)
+
+        if simple:
+            return value
+        safe_value = self.to_string(value)
+
         return {
             'module': cls.__module__,
             'type': cls.__name__,
-            'value': self.to_string(value)
+            'value': safe_value
         }
 
     @classmethod
@@ -75,8 +80,9 @@ class Attribute(object):
         value = json.loads(raw_value)
         return cls.from_python(value)
 
-    def to_json(self, value):
-        return json.dumps(self.to_python(value))
+    def to_json(self, value, simple=False):
+        data = self.to_python(value, simple=simple)
+        return json.dumps(data, default=bytes)
 
 
 class AutoUUID(Attribute):

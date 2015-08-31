@@ -154,7 +154,7 @@ class ActiveRecord(object):
 
         setattr(self, field_name, value)
 
-    def to_dict(self):
+    def to_dict(self, simple=False):
         data = {
             # the "hash" key contains the main attributes, but special
             # attributes like ByteStream get translated into other
@@ -165,6 +165,7 @@ class ActiveRecord(object):
             # of the type "string"
             'strings': {},
         }
+        simple_version = {}
         for name, field in self.__fields__.items():
             value = getattr(self, name, field.get_empty_value())
             if not value:
@@ -181,9 +182,19 @@ class ActiveRecord(object):
                 ))
 
             if isinstance(field, attributes.ByteStream):
-                data['strings'][name] = value
+                if not simple:
+                    data['strings'][name] = value
+                else:
+                    simple_version[name] = value
+
             else:
-                data['hash'][name] = serialized_value
+                if not simple:
+                    data['hash'][name] = serialized_value
+                else:
+                    simple_version[name] = value
+
+        if simple:
+            return simple_version
 
         return data
 

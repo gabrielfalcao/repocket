@@ -263,3 +263,18 @@ def test_create_user(context):
 
     found = User.objects.get(id=result.id)
     found.should.equal(result)
+
+
+@clean_slate
+def test_to_simple_dict(context):
+    ('Model#to_dict(simple=True) will return a simple key-value dict with the model contents')
+
+    author = User(
+        id='b9c9bf17-ef60-45bf-8217-4daabc6bc483',
+        email='foo@bar.com',
+    )
+    result = author.to_dict(simple=True)
+    result.should.equal({
+        'id': 'b9c9bf17-ef60-45bf-8217-4daabc6bc483',
+        'email': 'foo@bar.com',
+    })
