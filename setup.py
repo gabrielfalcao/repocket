@@ -44,7 +44,7 @@ setup(
     },
     author='Gabriel Falcao',
     author_email='gabriel@nacaolivre.org',
-    url='http://falcao.it/repocket',
+    url='http://repocket.readthedocs.org',
     packages=find_packages(exclude=['*tests*']),
     install_requires=requirements,
     zip_safe=False,
