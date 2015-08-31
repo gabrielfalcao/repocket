@@ -2,13 +2,15 @@
 from __future__ import unicode_literals
 import json
 import importlib
+
 import dateutil.parser
 
+from uuid import UUID as PythonsUUID
 from datetime import datetime
-from uuid import UUID
-from repocket._cache import MODELS
 
-from repocket.connections import configure
+from decimal import Decimal as PythonsDecimal
+
+from repocket._cache import MODELS
 
 
 class Attribute(object):
@@ -20,8 +22,9 @@ class Attribute(object):
     __base_type__ = bytes
     __empty_value__ = b''
 
-    def __init__(self, null=False):
+    def __init__(self, null=False, default=None):
         self.can_be_null = null
+        self.default = default
 
     def to_string(self, value):
         """Utility method that knows how to safely convert the value into a string"""
@@ -80,14 +83,20 @@ class AutoUUID(Attribute):
     """Automatically assigns a uuid1 as the value.
     ``__base_type__ = uuid.UUID``
     """
-    __base_type__ = UUID
+    __base_type__ = PythonsUUID
 
     @classmethod
     def cast(cls, value):
-        if isinstance(value, UUID):
+        if isinstance(value, PythonsUUID):
             return value
 
         return super(AutoUUID, cls).cast(value)
+
+
+class UUID(AutoUUID):
+    """Holds a valid ``uuid.UUID`` value
+    ``__base_type__ = uuid.UUID``
+    """
 
 
 class Unicode(Attribute):
@@ -104,6 +113,30 @@ class Bytes(Attribute):
     """
     __base_type__ = bytes
     __empty_value__ = b''
+
+
+class Integer(Attribute):
+    """Handles int
+    ``__base_type__ = int``
+    """
+    __base_type__ = int
+    __empty_value__ = 0
+
+
+class Float(Attribute):
+    """Handles float
+    ``__base_type__ = float``
+    """
+    __base_type__ = float
+    __empty_value__ = 0.0
+
+
+class Decimal(Attribute):
+    """Handles Decimal
+    ``__base_type__ = Decimal``
+    """
+    __base_type__ = PythonsDecimal
+    __empty_value__ = PythonsDecimal('0')
 
 
 class JSON(Unicode):
