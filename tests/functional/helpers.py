@@ -13,7 +13,6 @@ def prepare_redis(context):
     context.connection = context.pool.get_connection()
     sweep_redis(context)
 
-
 def sweep_redis(context):
     context.connection.flushall()
 

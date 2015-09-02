@@ -11,21 +11,16 @@ from repocket._cache import MODELS
 class ActiveRecordRegistry(type):
     def __init__(ActiveRecordClass, name, bases, members):
         module_name = ActiveRecordClass.__module__
-        model_name = ActiveRecordClass.__name__
+        compound_name = '.'.join([module_name, name])
 
-        if model_name == 'ActiveRecord' and module_name == 'repocket.model':
-            super(ActiveRecordRegistry, ActiveRecordClass).__init__(name, bases, members)
-            return
+        if name not in ('ActiveRecordRegistry', 'ActiveRecord'):
+            ActiveRecordClass.configure_fields(members)
+            ActiveRecordClass.objects = ActiveRecordManager(ActiveRecordClass)
+            ActiveRecordClass.__namespace__ = str(module_name)
+            ActiveRecordClass.__compound_name__ = compound_name
+            MODELS[compound_name] = ActiveRecordClass
 
-        module_name = ActiveRecordClass.__module__
-        model_name = ActiveRecordClass.__name__
-        compound_name = '.'.join([module_name, model_name])
         super(ActiveRecordRegistry, ActiveRecordClass).__init__(name, bases, members)
-        ActiveRecordClass.configure_fields(members)
-        ActiveRecordClass.objects = ActiveRecordManager(ActiveRecordClass)
-        ActiveRecordClass.__namespace__ = str(module_name)
-        ActiveRecordClass.__compound_name__ = compound_name
-        MODELS[compound_name] = ActiveRecordClass
 
     def configure_fields(ActiveRecordClass, members):
         hash_fields = OrderedDict()

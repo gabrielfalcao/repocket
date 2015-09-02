@@ -90,7 +90,7 @@ Let's save a ``User`` instance in redis:
 
     >>> import bcrypt
 
-    >>> harry = User(
+    >>> harry = User.create(
     ...     id='970773fa-4de1-11e5-86f4-6c4008a70392',
     ...     name='Harry Potter',
     ...     email='harry@hogwards.uk',
@@ -105,7 +105,7 @@ Let's save a ``User`` instance in redis:
     ...         ]
     ...     }
     ... )
-    >>> ron = User(
+    >>> ron = User.create(
     ...     id='40997aa4-71fc-4ad3-b0d7-04c0fac6d6d8',
     ...     name='Ron Weasley',
     ...     house_name='Gryffindor',
