@@ -14,7 +14,7 @@ class ActiveRecordRegistry(type):
         compound_name = '.'.join([module_name, name])
 
         if name not in ('ActiveRecordRegistry', 'ActiveRecord'):
-            ActiveRecordClass.configure_fields(members)
+            ActiveRecordRegistry.configure_fields(ActiveRecordClass, members)
             ActiveRecordClass.objects = ActiveRecordManager(ActiveRecordClass)
             ActiveRecordClass.__namespace__ = str(module_name)
             ActiveRecordClass.__compound_name__ = compound_name
@@ -22,6 +22,7 @@ class ActiveRecordRegistry(type):
 
         super(ActiveRecordRegistry, ActiveRecordClass).__init__(name, bases, members)
 
+    @staticmethod
     def configure_fields(ActiveRecordClass, members):
         hash_fields = OrderedDict()
         string_fields = OrderedDict()
@@ -47,9 +48,11 @@ class ActiveRecordRegistry(type):
 
             if isinstance(value, Attribute):
                 hash_fields[str(attribute)] = value
-
-            members.pop(attribute)
-            delattr(ActiveRecordClass, attribute)
+                members.pop(attribute, None)
+                try:
+                    delattr(ActiveRecordClass, attribute)
+                except AttributeError:
+                    pass
 
         if primary_key_attribute is None:
             primary_key_attribute = 'id'
