@@ -13,6 +13,10 @@ from decimal import Decimal as PythonsDecimal
 from repocket._cache import MODELS
 
 
+def get_current_time():
+    return datetime.utcnow()
+
+
 class Attribute(object):
     """Repocket treats its models and attributes as fully serializable.
     Every attribute contains a ``to_python`` method that knows how to
@@ -174,7 +178,7 @@ class DateTime(Attribute):
 
     """
     __base_type__ = datetime
-    __empty_value__ = datetime.utcnow
+    __empty_value__ = get_current_time
 
     def __init__(self, auto_now=False, null=False):
         super(DateTime, self).__init__(null=null)
