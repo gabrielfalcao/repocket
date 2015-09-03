@@ -37,7 +37,7 @@ requirements = [
 
 setup(
     name='repocket',
-    version='0.1.10',
+    version='0.1.11',
     description='simple active record for redis',
     entry_points={
         'console_scripts': ['repocket = repocket.cli:main'],
