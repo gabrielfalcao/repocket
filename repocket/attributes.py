@@ -13,7 +13,7 @@ from decimal import Decimal as PythonsDecimal
 from repocket._cache import MODELS
 
 
-def get_current_time():
+def get_current_time(field):
     return datetime.utcnow()
 
 
@@ -62,6 +62,7 @@ class Attribute(object):
 
         if simple:
             return value
+
         safe_value = self.to_string(value)
 
         return {
@@ -178,7 +179,7 @@ class DateTime(Attribute):
 
     """
     __base_type__ = datetime
-    __empty_value__ = get_current_time
+    __empty_value__ = None
 
     def __init__(self, auto_now=False, null=False):
         super(DateTime, self).__init__(null=null)
