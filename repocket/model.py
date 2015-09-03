@@ -168,17 +168,17 @@ class ActiveRecord(object):
         simple_version = {}
         for name, field in self.__fields__.items():
             value = getattr(self, name, field.get_empty_value())
-            if not value:
-                continue
 
             try:
                 serialized_value = field.to_json(value)
-            except (AttributeError, TypeError):
-                raise TypeError('Failed to serialize field {0}.{1} of type {2} with value: {3}'.format(
+
+            except (AttributeError, TypeError) as e:
+                raise TypeError('Failed to serialize field {0}.{1} of type {2} with value: {3} - {4}'.format(
                     self.__class__.__name__,
                     name,
                     type(value),
-                    value
+                    value,
+                    e
                 ))
 
             if isinstance(field, attributes.ByteStream):

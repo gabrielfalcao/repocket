@@ -274,7 +274,10 @@ def test_to_simple_dict(context):
         email='foo@bar.com',
     )
     result = author.to_dict(simple=True)
+
     result.should.equal({
-        'id': 'b9c9bf17-ef60-45bf-8217-4daabc6bc483',
-        'email': 'foo@bar.com',
+        'access_token': '',
+        'email': u'foo@bar.com',
+        'github_metadata': u'',
+        'id': u'b9c9bf17-ef60-45bf-8217-4daabc6bc483'
     })

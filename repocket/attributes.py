@@ -96,6 +96,9 @@ class AutoUUID(Attribute):
         if isinstance(value, PythonsUUID):
             return value
 
+        if not value:
+            return
+
         return super(AutoUUID, cls).cast(value)
 
 
@@ -109,6 +112,9 @@ class UUID(Attribute):
     def cast(cls, value):
         if isinstance(value, PythonsUUID):
             return value
+
+        if not value:
+            return
 
         return super(UUID, cls).cast(value)
 
@@ -199,6 +205,9 @@ class Pointer(Attribute):
         self.__base_type__ = to_model
 
     def to_string(self, value):
+        if not value:
+            return json.dumps(None)
+
         if not value.get_id():
             raise ReferenceError('The model {0} must be saved before serialized as a pointer in another model'.format(value))
 
@@ -207,6 +216,9 @@ class Pointer(Attribute):
     @classmethod
     def cast(cls, value):
         """this method uses a redis connection to retrieve the referenced item"""
+        if value == json.dumps(None):
+            return
+
         try:
             _, module_name, model_name, model_uuid = value.split(':')
         except ValueError:
