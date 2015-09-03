@@ -187,12 +187,18 @@ class DateTime(Attribute):
 
     @classmethod
     def cast(cls, value):
+        if not value:
+            return
+
         if isinstance(value, datetime):
             return value
 
         return dateutil.parser.parse(value)
 
     def to_string(self, value):
+        if not value:
+            return json.dumps(None)
+
         return self.cast(value).isoformat()
 
 
