@@ -221,7 +221,9 @@ class ActiveRecord(object):
     def matches(self, kw):
         matched = False
         for k, v in kw.items():
-            if self.get(k) == v:
+            field = self.__fields__[k]
+            comp = field.cast(v)
+            if self.get(k) == comp:
                 matched = True
             else:
                 matched = False

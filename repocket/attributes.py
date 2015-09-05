@@ -26,13 +26,14 @@ class Attribute(object):
     __base_type__ = bytes
     __empty_value__ = b''
 
-    def __init__(self, null=False, default=None):
+    def __init__(self, null=False, default=None, encoding='utf-8'):
         self.can_be_null = null
         self.default = default
+        self.encoding = encoding
 
     def to_string(self, value):
         """Utility method that knows how to safely convert the value into a string"""
-        return str(self.cast(value))
+        return bytes(self.cast(value))
 
     def from_string(self, value):
         return self.cast(value)
@@ -187,7 +188,7 @@ class DateTime(Attribute):
 
     @classmethod
     def cast(cls, value):
-        if not value:
+        if not value or value == json.dumps(None):
             return
 
         if isinstance(value, datetime):
