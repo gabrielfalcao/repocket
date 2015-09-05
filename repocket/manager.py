@@ -25,7 +25,7 @@ class ActiveRecordManager(object):
 
     def filter(self, **kw):
         all_results = self.all()
-        results = [i for i in all_results if i.matches(kw)]
+        results = [i for i in all_results if i is not None and i.matches(kw)]
         return results
 
     def all(self, connection=None):

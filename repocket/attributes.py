@@ -226,8 +226,8 @@ class Pointer(Attribute):
     __empty_value__ = None
 
     def __init__(self, to_model, null=False):
+        self.model = to_model
         super(Pointer, self).__init__(null=null)
-        self.__base_type__ = to_model
 
     def to_string(self, value):
         if not value:
@@ -244,6 +244,9 @@ class Pointer(Attribute):
         if is_null(value):
             return
 
+        if type(value) in MODELS.values():
+            return value
+
         try:
             _, module_name, model_name, model_uuid = value.split(':')
         except ValueError:
@@ -255,6 +258,7 @@ class Pointer(Attribute):
             raise ReferenceError('The model {0} is not available in repocket. Make sure that you imported it'.format(compound_name))
 
         return Model.objects.get(**{Model.__primary_key__: model_uuid})
+
 
 
 class ByteStream(Attribute):

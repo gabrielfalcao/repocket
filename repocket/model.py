@@ -44,7 +44,7 @@ class ActiveRecord(object):
             self.set(attribute, value)
 
     def __repr__(self):
-        attributes = ', '.join(['{0}={1}'.format(k, v) for k, v in self.to_dict().items()])
+        attributes = ', '.join(['{0}={1}'.format(k, repr(v)) for k, v in self.to_dict(simple=True).items() if v])
         return '{0}({1})'.format(self.__compound_name__, attributes)
 
     def __getitem__(self, name):
@@ -55,6 +55,9 @@ class ActiveRecord(object):
         return getattr(self, name)
 
     def __eq__(self, other):
+        if other is None:
+            return False
+
         if not isinstance(other, self.__class__):
             raise TypeError('Cannot compare {0} with {1}'.format(self, other))
 
@@ -247,6 +250,7 @@ class ActiveRecord(object):
         for k, v in kw.items():
             field = self.__fields__[k]
             comp = field.cast(v)
+
             if self.get(k) == comp:
                 matched = True
             else:

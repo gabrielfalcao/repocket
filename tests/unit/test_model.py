@@ -24,7 +24,7 @@ def test_active_record_calculate_key_for_field():
     result = item._calculate_key_for_field('contents')
     result.should.equal('repocket:tests.unit.test_model:UnitModelOne:059f3270-9e73-4d53-9970-443f83e412a0:field:contents')
 
-    repr(item).should.equal(b'tests.unit.test_model.UnitModelOne(hash={u\'id\': \'{"type": "AutoUUID", "value": "059f3270-9e73-4d53-9970-443f83e412a0", "module": "repocket.attributes"}\'}, strings={\'contents\': \'\'})')
+    repr(item).should.equal(b"tests.unit.test_model.UnitModelOne(id=u'059f3270-9e73-4d53-9970-443f83e412a0')")
 
 
 def test_equality_ok():
@@ -43,12 +43,7 @@ def test_equality_failed():
 
     (lambda: item == 'foobar').when.called.should.have.raised(
         TypeError,
-        'Cannot compare tests.unit.test_model.UnitModelOne'
-        '(hash={u\'id\': \'{"type": "AutoUUID", "value": '
-        '"059f3270-9e73-4d53-9970-443f83e412a0", "module":'
-        ' "repocket.attributes"}\'}, '
-        'strings={\'contents\': \'123\'})'
-    )
+        "Cannot compare tests.unit.test_model.UnitModelOne(id=u'059f3270-9e73-4d53-9970-443f83e412a0', contents='123') with foobar")
 
 
 def test_getitem():
