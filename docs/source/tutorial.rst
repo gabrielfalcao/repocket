@@ -137,6 +137,25 @@ Retrieving an item by its id
     }
 
 
+Manipulating in-memory data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can get the valus of an instance with either ``.attribute``` notation or ``["attribute"]``.
+
+::
+
+    >>> harry = User.objects.get(id='970773fa-4de1-11e5-86f4-6c4008a70392')
+    >>> harry.id
+    UUID('970773fa-4de1-11e5-86f4-6c4008a70392')
+
+
+::
+
+    >>> harry['id']
+    UUID('970773fa-4de1-11e5-86f4-6c4008a70392')
+
+
+
 Deleting a record from redis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

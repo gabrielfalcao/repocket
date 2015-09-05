@@ -1,9 +1,12 @@
 import uuid
+import logging
 
 from repocket import attributes
 from repocket.connections import configure
 from repocket.registry import ActiveRecordRegistry
 
+
+logger = logging.getLogger("repocket.model")
 
 class ActiveRecord(object):
     """base model class, this is how you declare your active record.
@@ -43,6 +46,13 @@ class ActiveRecord(object):
     def __repr__(self):
         attributes = ', '.join(['{0}={1}'.format(k, v) for k, v in self.to_dict().items()])
         return '{0}({1})'.format(self.__compound_name__, attributes)
+
+    def __getitem__(self, name):
+        options = self.__fields__.keys()
+        if name not in options:
+            raise KeyError("{0} is not a valid field in {1}, options are {2}".format(name, self, options))
+
+        return getattr(self, name)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -172,8 +182,8 @@ class ActiveRecord(object):
             try:
                 serialized_value = field.to_json(value)
 
-            except (AttributeError, TypeError) as e:
-                raise TypeError('Failed to serialize field {0}.{1} of type {2} with value: {3} - {4}'.format(
+            except Exception as e:
+                logger.error('Failed to serialize field {0}.{1} of type {2} with value: {3} - {4}'.format(
                     self.__class__.__name__,
                     name,
                     type(value),

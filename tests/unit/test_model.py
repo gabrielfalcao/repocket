@@ -49,3 +49,11 @@ def test_equality_failed():
         ' "repocket.attributes"}\'}, '
         'strings={\'contents\': \'123\'})'
     )
+
+
+def test_getitem():
+    ('ActiveRecord should behave like a dict by letting you retrieve values using [] notation')
+
+    item1 = UnitModelOne(id='059f3270-9e73-4d53-9970-443f83e412a0', contents=b'123')
+    item1['id'].should.equal('059f3270-9e73-4d53-9970-443f83e412a0')
+    item1['contents'].should.equal('123')

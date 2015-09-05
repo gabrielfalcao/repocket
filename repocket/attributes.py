@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 import json
 import importlib
-
+import logging
 import dateutil.parser
 
 from uuid import UUID as PythonsUUID
@@ -13,8 +13,21 @@ from decimal import Decimal as PythonsDecimal
 from repocket._cache import MODELS
 
 
+logger = logging.getLogger("repocket.attributes")
+
+
 def get_current_time(field):
     return datetime.utcnow()
+
+
+def is_null(value):
+    if not value:
+        return True
+
+    if isinstance(value, basestring) and value.lower() in ['none', json.dumps(None)]:
+        return True
+
+    return False
 
 
 class Attribute(object):
@@ -33,7 +46,11 @@ class Attribute(object):
 
     def to_string(self, value):
         """Utility method that knows how to safely convert the value into a string"""
-        return bytes(self.cast(value))
+        converted = self.cast(value)
+        if isinstance(converted, unicode):
+            converted = converted.encode(self.encoding)
+
+        return bytes(converted)
 
     def from_string(self, value):
         return self.cast(value)
@@ -91,23 +108,6 @@ class Attribute(object):
         return json.dumps(data, default=bytes)
 
 
-class AutoUUID(Attribute):
-    """Automatically assigns a uuid1 as the value.
-    ``__base_type__ = uuid.UUID``
-    """
-    __base_type__ = PythonsUUID
-
-    @classmethod
-    def cast(cls, value):
-        if isinstance(value, PythonsUUID):
-            return value
-
-        if not value:
-            return
-
-        return super(AutoUUID, cls).cast(value)
-
-
 class UUID(Attribute):
     """Automatically assigns a uuid1 as the value.
     ``__base_type__ = uuid.UUID``
@@ -119,10 +119,20 @@ class UUID(Attribute):
         if isinstance(value, PythonsUUID):
             return value
 
-        if not value:
+        if is_null(value):
             return
 
-        return super(UUID, cls).cast(value)
+        try:
+            return cls.__base_type__(value)
+        except ValueError as e:
+            raise ValueError(": ".join([str(e), repr(value)]))
+
+
+class AutoUUID(UUID):
+    """Automatically assigns a uuid1 as the value.
+    ``__base_type__ = uuid.UUID``
+    """
+    __base_type__ = PythonsUUID
 
 
 class Unicode(Attribute):
@@ -131,6 +141,9 @@ class Unicode(Attribute):
     """
     __base_type__ = unicode
     __empty_value__ = u''
+
+    def to_string(self, value):
+        return self.__base_type__(value)
 
 
 class Bytes(Attribute):
@@ -188,7 +201,7 @@ class DateTime(Attribute):
 
     @classmethod
     def cast(cls, value):
-        if not value or value == json.dumps(None):
+        if is_null(value):
             return
 
         if isinstance(value, datetime):
@@ -228,7 +241,7 @@ class Pointer(Attribute):
     @classmethod
     def cast(cls, value):
         """this method uses a redis connection to retrieve the referenced item"""
-        if value == json.dumps(None):
+        if is_null(value):
             return
 
         try:
