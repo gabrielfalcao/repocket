@@ -193,6 +193,7 @@ class ActiveRecord(object):
                     value,
                     e
                 ))
+                serialized_value = field.get_empty_value()
 
             if isinstance(field, attributes.ByteStream):
                 if not simple:

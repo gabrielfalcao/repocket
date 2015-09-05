@@ -100,7 +100,12 @@ class Attribute(object):
 
     @classmethod
     def from_json(cls, raw_value):
-        value = json.loads(raw_value)
+        try:
+            value = json.loads(raw_value)
+        except ValueError:
+            logger.exception("Failed to parse json from: %s", repr(raw_value))
+            return
+
         return cls.from_python(value)
 
     def to_json(self, value, simple=False):
@@ -143,7 +148,7 @@ class Unicode(Attribute):
     __empty_value__ = u''
 
     def to_string(self, value):
-        return self.__base_type__(value)
+        return super(Unicode, self).to_string(unicode(value))
 
 
 class Bytes(Attribute):

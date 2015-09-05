@@ -242,7 +242,7 @@ def test_unicode_to_string():
     result = instance.to_string(str(test_uuid))
 
     # Then the result should be a string
-    result.should.be.a(unicode)
+    result.should.be.a(bytes)
 
 
 def test_unicode_from_string():
