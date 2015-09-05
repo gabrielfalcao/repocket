@@ -281,3 +281,24 @@ def test_to_simple_dict(context):
         'github_metadata': u'',
         'id': u'b9c9bf17-ef60-45bf-8217-4daabc6bc483'
     })
+
+
+@clean_slate
+def test_delete_user(context):
+    ('ActiveRecord.delete() should remove all the redis keys')
+
+    # Given that I create a user
+    usr1 = User.objects.create(
+        access_token=b'sometoken',
+        email='foo@bar.com',
+        github_metadata={
+            'yay': 'this is json baby!'
+        }
+    )
+
+    User.objects.all().should_not.be.empty
+
+    deleted_keys = usr1.delete()
+    deleted_keys.should.equal(1)
+
+    User.objects.all().should.be.empty

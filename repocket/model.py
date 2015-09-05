@@ -199,6 +199,9 @@ class ActiveRecord(object):
         return data
 
     def save(self):
+        """Persists the model in redis.
+        Automatically generates a primary key value if one was not provided
+        """
         self._set_primary_key()
         redis_hash_key = self._calculate_hash_key()
 
@@ -218,7 +221,18 @@ class ActiveRecord(object):
         pipeline.execute()
         return redis_keys
 
+    def delete(self):
+        """Deletes all the redis keys used by this model"""
+        keys = [self._calculate_hash_key()]
+        keys.extend([self._calculate_key_for_field(k) for k in self.__string_fields__.keys()])
+
+        conn = configure.get_connection()
+        results = conn.delete(*keys)
+        return results
+
     def matches(self, kw):
+        """Takes a dictionary with keyword args and returns true if all the
+        args match the model field values"""
         matched = False
         for k, v in kw.items():
             field = self.__fields__[k]

@@ -137,6 +137,20 @@ Retrieving an item by its id
     }
 
 
+Deleting a record from redis
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``delete()`` method returns an integer corresponding to the number
+of redis keys that were deleted as result.
+
+::
+
+    >>> harry = User.objects.get(id='970773fa-4de1-11e5-86f4-6c4008a70392')
+    >>> harry.delete()
+    1
+
+
+
 Retrive multiple items with filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

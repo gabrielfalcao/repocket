@@ -12,6 +12,9 @@ class ActiveRecordManager(object):
     def __init__(self, model):
         self.model = model
 
+    def create(self, **kwargs):
+        return self.model.create(**kwargs)
+
     def get(self, id):
         instance = self.model()
         instance.set(instance.__primary_key__, id)
