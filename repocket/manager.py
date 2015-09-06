@@ -43,16 +43,17 @@ class ActiveRecordManager(object):
         conn = connection or configure.get_connection()
         prefix = self.model._static_key_prefix()
         search_pattern = ':'.join([prefix, '*'])
+
         keys = conn.keys(search_pattern)
-        items = [self.get_item_from_redis_key(k) for k in keys]
+        items = [self.get_item_from_redis_key(k) for k in filter(lambda x: ':field:' not in x, keys)]
         return items
 
     def get_raw_dict_from_redis(self, key, connection=None):
         conn = connection or configure.get_connection()
         try:
             return conn.hgetall(key)
-        except Exception:
-            logger.exception('Failed to retrieve key')
+        except Exception as e:
+            logger.warning('Failed to retrieve key {0}: {1}'.format(key, e))
 
     def get_item_from_redis_key(self, key, connection=None):
         conn = connection or configure.get_connection()
