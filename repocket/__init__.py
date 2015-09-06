@@ -5,6 +5,7 @@ from repocket import attributes
 from repocket.connections import configure
 from repocket.model import ActiveRecord
 from repocket.manager import ActiveRecordManager
+from repocket.util import is_null
 
 __all__ = [
     'attributes',
@@ -12,4 +13,5 @@ __all__ = [
     'ActiveRecord',
     'ActiveRecordManager',
     'MODELS',
+    'is_null',
 ]

@@ -11,23 +11,13 @@ from datetime import datetime
 from decimal import Decimal as PythonsDecimal
 
 from repocket._cache import MODELS
-
+from repocket.util import is_null
 
 logger = logging.getLogger("repocket.attributes")
 
 
 def get_current_time(field):
     return datetime.utcnow()
-
-
-def is_null(value):
-    if not value:
-        return True
-
-    if isinstance(value, basestring) and value.lower() in ['none', json.dumps(None)]:
-        return True
-
-    return False
 
 
 class Attribute(object):
