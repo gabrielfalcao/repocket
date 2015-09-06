@@ -90,12 +90,7 @@ class Attribute(object):
 
     @classmethod
     def from_json(cls, raw_value):
-        try:
-            value = json.loads(raw_value)
-        except ValueError:
-            logger.exception("Failed to parse json from: %s", repr(raw_value))
-            return
-
+        value = json.loads(raw_value)
         return cls.from_python(value)
 
     def to_json(self, value, simple=False):
@@ -179,6 +174,14 @@ class JSON(Unicode):
     retrieving.
     ``__base_type__ = unicode``
     """
+    __base_type__ = unicode
+
+    @classmethod
+    def cast(cls, value):
+        try:
+            return json.loads(value)
+        except ValueError:
+            return value
 
 
 class DateTime(Attribute):

@@ -201,6 +201,12 @@ class ActiveRecord(object):
                 else:
                     simple_version[name] = value
 
+            elif isinstance(field, attributes.Pointer):
+                if not simple:
+                    data['hash'][name] = serialized_value
+                else:
+                    simple_version[name] = value and value.to_dict(simple=True) or value
+
             else:
                 if not simple:
                     data['hash'][name] = serialized_value
