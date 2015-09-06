@@ -3,6 +3,8 @@ Repocket
 
 Simple active record for redis. Drop-in replacement for CQLEngine
 
+.. image:: https://readthedocs.org/projects/repocket/badge/?version=latest
+
 
 Why
 ===
