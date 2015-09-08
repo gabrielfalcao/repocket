@@ -90,7 +90,12 @@ class Attribute(object):
 
     @classmethod
     def from_json(cls, raw_value):
-        value = json.loads(raw_value)
+        try:
+            value = json.loads(raw_value)
+        except Exception:
+            logger.error('Failed to deserialize value: {0}'.format(repr(raw_value)))
+            return
+
         return cls.from_python(value)
 
     def to_json(self, value, simple=False):
