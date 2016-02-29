@@ -179,7 +179,7 @@ class JSON(Unicode):
     retrieving.
     ``__base_type__ = unicode``
     """
-    __base_type__ = unicode
+    __base_type__ = json.dumps
 
     @classmethod
     def cast(cls, value):

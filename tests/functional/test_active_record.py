@@ -30,6 +30,7 @@ def test_save_user(context):
 
     # Given that I instantiate a user
     obj1 = User(
+        id='295decfd-deb5-11e5-88db-6c4008a70392',
         access_token=b'sometoken',
         email='foo@bar.com',
         github_metadata={
@@ -48,6 +49,14 @@ def test_save_user(context):
     result.should.have.key('github_metadata').being.equal(
         '{"type": "JSON", "value": "{u\'yay\': u\'this is json baby!\'}", "module": "repocket.attributes"}')
     result.should.have.key('id').being.a(str)
+    obj1.to_dict(simple=True).should.equal({
+        'access_token': 'sometoken',
+        'email': u'foo@bar.com',
+        'github_metadata': {
+            'yay': 'this is json baby!'
+        },
+        'id': '295decfd-deb5-11e5-88db-6c4008a70392'
+    })
 
 
 @clean_slate
@@ -227,6 +236,7 @@ def test_comparing_two_models(context):
 def test_get_retrieving_reference(context):
     ('Retrieving an object through manager.get() should also retrieve the references')
     import os
+
     os.environ['DEBUG'] = 'true'
     author = User(
         id='b9c9bf17-ef60-45bf-8217-4daabc6bc483',
