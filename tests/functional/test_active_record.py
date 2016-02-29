@@ -226,7 +226,8 @@ def test_comparing_two_models(context):
 @clean_slate
 def test_get_retrieving_reference(context):
     ('Retrieving an object through manager.get() should also retrieve the references')
-
+    import os
+    os.environ['DEBUG'] = 'true'
     author = User(
         id='b9c9bf17-ef60-45bf-8217-4daabc6bc483',
         email='foo@bar.com',
@@ -239,11 +240,10 @@ def test_get_retrieving_reference(context):
     )
 
     post.save()
+    post.author.should.equal(author)
 
     result = BlogPost.objects.get(id=post.id)
     result.should.equal(post)
-
-    post.author.should.equal(author)
 
 
 @clean_slate

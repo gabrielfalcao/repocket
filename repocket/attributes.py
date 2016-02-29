@@ -183,6 +183,9 @@ class JSON(Unicode):
 
     @classmethod
     def cast(cls, value):
+        if not isinstance(value, basestring):
+            return value
+
         try:
             return json.loads(value)
         except ValueError:
@@ -239,7 +242,7 @@ class Pointer(Attribute):
         if not value.get_id():
             raise ReferenceError('The model {0} must be saved before serialized as a pointer in another model'.format(value))
 
-        return value._calculate_key_prefix()
+        return value._calculate_hash_key()
 
     @classmethod
     def cast(cls, value):
@@ -248,6 +251,7 @@ class Pointer(Attribute):
             return
 
         if type(value) in MODELS.values():
+            # the value is already a valid model instance
             return value
 
         try:
@@ -260,8 +264,8 @@ class Pointer(Attribute):
         if not Model:
             raise ReferenceError('The model {0} is not available in repocket. Make sure that you imported it'.format(compound_name))
 
-        return Model.objects.get(**{Model.__primary_key__: model_uuid})
-
+        result = Model.objects.get(**{Model.__primary_key__: model_uuid})
+        return result
 
 
 class ByteStream(Attribute):

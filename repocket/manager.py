@@ -19,7 +19,7 @@ class ActiveRecordManager(object):
         instance = self.model()
         instance.set(instance.__primary_key__, id)
 
-        prefix = instance._calculate_key_prefix()
+        prefix = instance._static_key_prefix()
         redis_key = ':'.join([prefix, str(id)])
         return self.get_item_from_redis_key(redis_key)
 

@@ -8,6 +8,7 @@ from repocket.registry import ActiveRecordRegistry
 
 logger = logging.getLogger("repocket.model")
 
+
 class ActiveRecord(object):
     """base model class, this is how you declare your active record.
 
@@ -40,7 +41,12 @@ class ActiveRecord(object):
     def __init__(self, *args, **kw):
         for attribute, field in self.__fields__.items():
             default = field.get_empty_value()
-            value = kw.get(attribute, default) or default
+            raw_value = kw.get(attribute, default)
+            if raw_value:
+                value = field.cast(raw_value)
+            else:
+                value = default
+
             self.set(attribute, value)
 
     def __repr__(self):
@@ -82,15 +88,9 @@ class ActiveRecord(object):
     def get_id(self):
         return getattr(self, self.__primary_key__, None)
 
-    def _calculate_key_prefix(self):
-        return b'{0}:{1}'.format(
-            self._static_key_prefix(),
-            str(self.get_id()),
-        )
-
     def _calculate_key_for_field(self, name):
         return b':'.join([
-            self._calculate_key_prefix(),
+            self._calculate_hash_key(),
             'field',
             name,
         ])
@@ -106,7 +106,7 @@ class ActiveRecord(object):
             # already set, carry on
             return
 
-        value = str(uuid.uuid1())
+        value = uuid.uuid1()
         self.set(self.__primary_key__, value)
 
     def _get_primary_key(self):
@@ -122,7 +122,13 @@ class ActiveRecord(object):
         ::
 
             repocket:python_module_contaning_your_model:YourActiveRecordClassName
+        """
 
+        return self._static_key_prefix()
+
+    @property
+    def _primary_key(self):
+        """
         Repocket automatically assigns a UUID1 as the ``id`` of your model, after set, the id itself is used to compose the redis key.
 
         For example, let's say that your model has the uuid: ``c5bb91d4-45e6-11e5-b77b-6c4008a70392``
@@ -132,13 +138,7 @@ class ActiveRecord(object):
         ::
 
             repocket:yourapp.models:Person:c5bb91d4-45e6-11e5-b77b-6c4008a70392
-
         """
-
-        return self._calculate_key_prefix()
-
-    @property
-    def _primary_key(self):
         return self.get(self.__primary_key__)
 
     def append_to_bytestream(self, field_name, value):
@@ -206,6 +206,12 @@ class ActiveRecord(object):
                     data['hash'][name] = serialized_value
                 else:
                     simple_version[name] = value and value.to_dict(simple=True) or value
+
+            elif isinstance(field, (attributes.UUID, attributes.AutoUUID)):
+                if not simple:
+                    data['hash'][name] = serialized_value
+                else:
+                    simple_version[name] = str(value)
 
             else:
                 if not simple:
