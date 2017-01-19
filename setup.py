@@ -30,7 +30,7 @@ def read_version():
 
 
 requirements = [
-    'redis==2.10.3',
+    'redis==2.10.5',
     'python-dateutil==2.4.2',
 ]
 
