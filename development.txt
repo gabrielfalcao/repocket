@@ -19,3 +19,4 @@ snowballstemmer==1.2.1
 sphinx==1.3.5
 sphinx-rtd-theme==0.1.9
 sure==1.2.24
+twine==1.8.1

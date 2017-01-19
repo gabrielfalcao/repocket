@@ -1,2 +1,4 @@
-recursive-include repocket/templates *
-recursive-include repocket/static *
+include *.rst *.txt LICENSE tox.ini .travis.yml docs/source/Makefile .coveragerc
+recursive-include docs/source *.rst
+recursive-include docs/source *.py
+prune docs/build
