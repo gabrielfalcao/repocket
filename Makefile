@@ -23,10 +23,10 @@ clean:
 	@git clean -Xdf
 
 release: clean
-	-@./.release
-	@python setup.py sdist bdist_wheel
-	@twine register -r gabrielfalcao.pypi dist/*.tar.gz
-	@twine upload -r gabrielfalcao.pypi dist/*.tar.gz
+	@rm -rf dist
+	@python setup.py sdist
+	@twine register dist/*.tar.gz
+	@twine upload dist/*.tar.gz
 
 html-docs:
 	cd docs && make html
