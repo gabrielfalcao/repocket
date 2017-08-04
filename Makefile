@@ -25,7 +25,6 @@ clean:
 release: clean
 	@rm -rf dist
 	@python setup.py sdist
-	@twine register dist/*.tar.gz
 	@twine upload dist/*.tar.gz
 
 html-docs:
