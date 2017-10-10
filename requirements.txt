@@ -1,4 +1,4 @@
 python-dateutil==2.6.1
-redis==2.10.5
+redis==2.10.6
 rednose==1.2.2
 sphinx-rtd-theme==0.2.4
