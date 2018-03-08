@@ -1,3 +1,4 @@
+ipdb==0.10.3
 python-dateutil==2.6.1
 redis==2.10.6
 rednose==1.2.2

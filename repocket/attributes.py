@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import json
 import importlib
 import logging
@@ -9,7 +8,7 @@ from uuid import UUID as PythonsUUID
 from datetime import datetime
 
 from decimal import Decimal as PythonsDecimal
-
+from six import text_type, binary_type
 from repocket._cache import MODELS
 from repocket.util import is_null
 
@@ -26,7 +25,7 @@ class Attribute(object):
     serialize the type safely.
 
     """
-    __base_type__ = bytes
+    __base_type__ = text_type
     __empty_value__ = b''
 
     def __init__(self, null=False, default=None, encoding='utf-8'):
@@ -37,10 +36,10 @@ class Attribute(object):
     def to_string(self, value):
         """Utility method that knows how to safely convert the value into a string"""
         converted = self.cast(value)
-        if isinstance(converted, unicode):
+        if isinstance(converted, text_type):
             converted = converted.encode(self.encoding)
 
-        return bytes(converted)
+        return binary_type(converted)
 
     def from_string(self, value):
         return self.cast(value)
@@ -100,7 +99,7 @@ class Attribute(object):
 
     def to_json(self, value, simple=False):
         data = self.to_python(value, simple=simple)
-        return json.dumps(data, default=bytes)
+        return json.dumps(data, default=binary_type)
 
 
 class UUID(Attribute):
@@ -131,21 +130,28 @@ class AutoUUID(UUID):
 
 
 class Unicode(Attribute):
-    """Handles unicode-safe values
-    ``__base_type__ = unicode``
+    """Handles text_type-safe values
+    ``__base_type__ = text_type``
     """
-    __base_type__ = unicode
+    encoding = 'utf-8'
+
+    __base_type__ = text_type
     __empty_value__ = u''
 
     def to_string(self, value):
-        return super(Unicode, self).to_string(unicode(value))
+        return super(Unicode, self).to_string(text_type(value, self.encoding))
+
+    @classmethod
+    def cast(cls, value):
+        """Casts the attribute value :py:class:`Unicode`"""
+        return cls.__base_type__(value, cls.encoding)
 
 
 class Bytes(Attribute):
     """Handles raw byte strings
-    ``__base_type__ = bytes``
+    ``__base_type__ = binary_type``
     """
-    __base_type__ = bytes
+    __base_type__ = binary_type
     __empty_value__ = b''
 
 
@@ -177,7 +183,7 @@ class JSON(Unicode):
     """This special attribute automatically stores python data as JSON
     string inside of redis. ANd automatically deserializes it when
     retrieving.
-    ``__base_type__ = unicode``
+    ``__base_type__ = text_type``
     """
     __base_type__ = json.dumps
 
@@ -269,8 +275,8 @@ class Pointer(Attribute):
 
 
 class ByteStream(Attribute):
-    """Handles bytes that will be stored as a string in redis
-    ``__base_type__ = bytes``
+    """Handles binary_type that will be stored as a string in redis
+    ``__base_type__ = binary_type``
     """
-    __base_type__ = bytes
+    __base_type__ = binary_type
     __empty_value__ = b''

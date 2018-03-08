@@ -12,6 +12,8 @@ from repocket.attributes import JSON
 from repocket.attributes import DateTime
 from repocket.attributes import Pointer
 from repocket.attributes import ByteStream
+from six import text_type, binary_type
+
 
 test_uuid = UUID('3112edba-4b5d-11e5-b02e-6c4008a70392')
 
@@ -39,7 +41,7 @@ def test_attribute_from_string():
     result = attribute.from_string('100')
 
     # Then the result should be a string
-    result.should.be.a(bytes)
+    result.should.be.a(text_type)
 
 
 def test_attribute_get_base_type():
