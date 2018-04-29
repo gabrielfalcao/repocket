@@ -9,14 +9,14 @@ endif
 test: clean unit functional
 
 deps:
-	pip install -U pip
-	pip install -r requirements.txt
+	@(2>&1 which pipenv > /dev/null) || pip install pipenv
+	@pipenv install --dev
 
 unit:
-	@nosetests -x -v -s --rednose --with-coverage --cover-erase --cover-package=repocket tests/unit
+	@pipenv run nosetests -x -v -s --rednose --with-coverage --cover-erase --cover-package=repocket tests/unit
 
 functional:
-	@nosetests --stop --logging-level=INFO -v -s --with-coverage --cover-erase --cover-package=repocket --rednose tests/functional
+	@pipenv run nosetests --stop --logging-level=INFO -v -s --with-coverage --cover-erase --cover-package=repocket --rednose tests/functional
 
 clean:
 	@rm -rf sandbox dist
@@ -24,8 +24,8 @@ clean:
 
 release: clean
 	@rm -rf dist
-	@python setup.py sdist
-	@twine upload dist/*.tar.gz
+	@pipenv run python setup.py sdist
+	@pipenv run twine upload dist/*.tar.gz
 
 html-docs:
 	cd docs && make html

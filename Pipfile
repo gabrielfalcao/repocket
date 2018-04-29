@@ -1,0 +1,32 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+ipdb = "==0.10.3"
+python-dateutil = "==2.6.1"
+redis = "*"
+rednose = "==1.2.2"
+sphinx-rtd-theme = "==0.2.4"
+pendulum = "*"
+
+
+[dev-packages]
+
+sphinx = "*"
+ipdb = "*"
+sure = "*"
+twine = "*"
+nose = "*"
+rednose = "*"
+mock = "*"
+coverage = "*"
+
+
+[requires]
+
+python_version = "3.6"

@@ -25,7 +25,7 @@ def test_active_record_calculate_key_for_field():
     result = item._calculate_key_for_field('contents')
     result.should.equal('repocket:tests.unit.test_model:UnitModelOne:059f3270-9e73-4d53-9970-443f83e412a0:field:contents')
 
-    repr(item).should.equal(b"tests.unit.test_model.UnitModelOne(id='059f3270-9e73-4d53-9970-443f83e412a0')")
+    repr(item).should.equal("tests.unit.test_model.UnitModelOne(id='059f3270-9e73-4d53-9970-443f83e412a0')")
 
 
 def test_equality_ok():
@@ -44,7 +44,7 @@ def test_equality_failed():
 
     (lambda: item == 'foobar').when.called.should.have.raised(
         TypeError,
-        "Cannot compare tests.unit.test_model.UnitModelOne(id='059f3270-9e73-4d53-9970-443f83e412a0', contents='123') with foobar")
+        "Cannot compare tests.unit.test_model.UnitModelOne(contents=b'123', id='059f3270-9e73-4d53-9970-443f83e412a0') with foobar")
 
 
 def test_getitem():
@@ -52,4 +52,4 @@ def test_getitem():
 
     item1 = UnitModelOne(id='059f3270-9e73-4d53-9970-443f83e412a0', contents=b'123')
     item1['id'].should.equal(uuid.UUID('059f3270-9e73-4d53-9970-443f83e412a0'))
-    item1['contents'].should.equal('123')
+    item1['contents'].should.equal(b'123')

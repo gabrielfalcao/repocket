@@ -28,7 +28,7 @@ class ActiveRecordRegistry(type):
         string_fields = OrderedDict()
         primary_key_attribute = None
 
-        for attribute, value in members.items():
+        for attribute, value in list(members.items()):
             if isinstance(value, AutoUUID):
                 if primary_key_attribute is not None:
                     msg = '{0} already defined the primary key: {1}, but you also defined {2}'

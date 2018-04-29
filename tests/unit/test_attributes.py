@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-import json
+
+import pendulum
+
 from uuid import UUID
-from datetime import datetime
+
+
 from repocket.attributes import Attribute
 from repocket.attributes import AutoUUID
 from repocket.attributes import Unicode
@@ -12,7 +15,10 @@ from repocket.attributes import JSON
 from repocket.attributes import DateTime
 from repocket.attributes import Pointer
 from repocket.attributes import ByteStream
-from six import text_type, binary_type
+from repocket.serialization import json
+
+from repocket.compat import binary_type as bytes
+from repocket.compat import text_type as unicode
 
 
 test_uuid = UUID('3112edba-4b5d-11e5-b02e-6c4008a70392')
@@ -28,7 +34,7 @@ def test_attribute_to_string():
     result = attribute.to_string(100)
 
     # Then the result should be a string
-    result.should.be.a(bytes)
+    result.should.be.a(unicode)
 
 
 def test_attribute_from_string():
@@ -41,7 +47,7 @@ def test_attribute_from_string():
     result = attribute.from_string('100')
 
     # Then the result should be a string
-    result.should.be.a(text_type)
+    result.should.be.a(bytes)
 
 
 def test_attribute_get_base_type():
@@ -82,9 +88,9 @@ def test_attribute_from_python():
 
     # When I call from_python
     result = attribute.from_python({
-        b'module': b'repocket.attributes',
-        b'type': b'Attribute',
-        b'value': b'foobar',
+        'module': b'repocket.attributes',
+        'type': b'Attribute',
+        'value': 'foobar',
     })
 
     # Then the result should be a value
@@ -101,9 +107,9 @@ def test_attribute_from_json():
 
     # When I call from_json
     result = attribute.from_json(json.dumps({
-        b'module': b'repocket.attributes',
-        b'type': b'Attribute',
-        b'value': b'foobar',
+        'module': 'repocket.attributes',
+        'type': 'Attribute',
+        'value': 'foobar',
     }))
 
     # Then the result should be a value
@@ -123,7 +129,7 @@ def test_attribute_to_json():
 
     # Then the result should be a value
     result.should.equal(
-        '{"type": "Attribute", "value": "chucknorris", "module": "repocket.attributes"}'
+        '{"module": "repocket.attributes", "type": "Attribute", "value": "chucknorris"}'
     )
 
 
@@ -134,7 +140,7 @@ def test_autouuid_to_string():
     autouuid = AutoUUID()
 
     # When I call to_string
-    result = autouuid.to_string(str(test_uuid))
+    result = autouuid.to_string(test_uuid)
 
     # Then the result should be a string
     result.should.be.a(bytes)
@@ -191,9 +197,9 @@ def test_autouuid_from_python():
 
     # When I call from_python
     result = autouuid.from_python({
-        b'module': b'repocket.attributes',
-        b'type': b'AutoUUID',
-        b'value': b'3112edba-4b5d-11e5-b02e-6c4008a70392',
+        'module': b'repocket.attributes',
+        'type': b'AutoUUID',
+        'value': b'3112edba-4b5d-11e5-b02e-6c4008a70392',
     })
 
     # Then the result should be a value
@@ -210,9 +216,9 @@ def test_autouuid_from_json():
 
     # When I call from_json
     result = autouuid.from_json(json.dumps({
-        b'module': b'repocket.attributes',
-        b'type': b'AutoUUID',
-        b'value': b'3112edba-4b5d-11e5-b02e-6c4008a70392',
+        'module': b'repocket.attributes',
+        'type': b'AutoUUID',
+        'value': b'3112edba-4b5d-11e5-b02e-6c4008a70392',
     }))
 
     # Then the result should be a value
@@ -230,7 +236,7 @@ def test_autouuid_to_json():
 
     # Then the result should be a value
     result.should.equal(
-        '{"type": "AutoUUID", "value": "3112edba-4b5d-11e5-b02e-6c4008a70392", "module": "repocket.attributes"}'
+        '{"module": "repocket.attributes", "type": "AutoUUID", "value": "3112edba-4b5d-11e5-b02e-6c4008a70392"}',
     )
 
 
@@ -241,10 +247,10 @@ def test_unicode_to_string():
     instance = Unicode()
 
     # When I call to_string
-    result = instance.to_string(str(test_uuid))
+    result = instance.to_string(test_uuid)
 
     # Then the result should be a string
-    result.should.be.a(bytes)
+    result.should.be.a(unicode)
 
 
 def test_unicode_from_string():
@@ -298,9 +304,9 @@ def test_unicode_from_python():
 
     # When I call from_python
     result = instance.from_python({
-        b'module': b'repocket.attributes',
-        b'type': b'Unicode',
-        b'value': u'unsafestring',
+        'module': 'repocket.attributes',
+        'type': 'Unicode',
+        'value': 'unsafestring',
     })
 
     # Then the result should be a value
@@ -315,13 +321,13 @@ def test_unicode_from_json():
 
     # When I call from_json
     result = instance.from_json(json.dumps({
-        b'module': b'repocket.attributes',
-        b'type': b'Unicode',
-        b'value': b'unsafestring',
+        'module': b'repocket.attributes',
+        'type': b'Unicode',
+        'value': b'unsafestring',
     }))
 
     # Then the result should be a value
-    result.should.equal(u'unsafestring')
+    result.should.equal('unsafestring')
 
 
 def test_unicode_to_json():
@@ -331,11 +337,11 @@ def test_unicode_to_json():
     instance = Unicode()
 
     # When I call to_json
-    result = instance.to_json(u'unsafestring')
+    result = instance.to_json('unsafestring')
 
     # Then the result should be a value
     result.should.equal(
-        '{"type": "Unicode", "value": "unsafestring", "module": "repocket.attributes"}'
+        '{"module": "repocket.attributes", "type": "Unicode", "value": "unsafestring"}'
     )
 
 
@@ -349,7 +355,7 @@ def test_datetime_to_string():
     result = instance.to_string('2015-08-25 15:57:37-04:00')
 
     # Then the result should be a string
-    result.should.be.a(bytes)
+    result.should.be.an(unicode)
 
 
 def test_datetime_from_string():
@@ -362,7 +368,7 @@ def test_datetime_from_string():
     result = instance.from_string('2015-08-25 15:57:37-04:00')
 
     # Then the result should be a UUID
-    result.should.be.an(datetime)
+    result.should.be.a(pendulum.Pendulum)
 
 
 def test_datetime_get_base_type():
@@ -375,7 +381,7 @@ def test_datetime_get_base_type():
     result = instance.get_base_type()
 
     # Then the result should be bytes
-    result.should.equal(datetime)
+    result.should.equal(pendulum.Pendulum)
 
 
 def test_datetime_to_python():
@@ -391,7 +397,7 @@ def test_datetime_to_python():
     result.should.equal({
         'module': 'repocket.attributes',
         'type': 'DateTime',
-        'value': '2015-08-25T15:57:37-04:00',
+        'value': '2015-08-25T15:57:37+00:00',
     })
 
 
@@ -403,14 +409,14 @@ def test_datetime_from_python():
 
     # When I call from_python
     result = instance.from_python({
-        b'module': b'repocket.attributes',
-        b'type': b'DateTime',
-        b'value': u'Tue Aug 25 15:57:37 EDT 2015',
+        'module': b'repocket.attributes',
+        'type': b'DateTime',
+        'value': u'Tue Aug 25 15:57:37 EDT 2015',
     })
 
     # Then the result should be a value
-    result.should.be.a(datetime)
-    result.replace(tzinfo=None).should.equal(datetime(2015, 8, 25, 15, 57, 37))
+    result.should.be.a(pendulum.Pendulum)
+    result.should.equal(pendulum.parse('Tue Aug 25 15:57:37 EDT 2015'))
 
 
 def test_datetime_from_json():
@@ -421,14 +427,14 @@ def test_datetime_from_json():
 
     # When I call from_json
     result = instance.from_json(json.dumps({
-        b'module': b'repocket.attributes',
-        b'type': b'DateTime',
-        b'value': b'Tue Aug 25 15:57:37 EDT 2015',
+        'module': b'repocket.attributes',
+        'type': b'DateTime',
+        'value': b'Tue Aug 25 15:57:37 EDT 2015',
     }))
 
     # Then the result should be a value
-    result.should.be.a(datetime)
-    result.replace(tzinfo=None).should.equal(datetime(2015, 8, 25, 15, 57, 37))
+    result.should.be.a(pendulum.Pendulum)
+    result.should.equal(pendulum.parse('Tue Aug 25 15:57:37 EDT 2015'))
 
 
 def test_datetime_to_json():
@@ -438,9 +444,9 @@ def test_datetime_to_json():
     instance = DateTime()
 
     # When I call to_json
-    result = instance.to_json(u'Tue Aug 25 15:57:37 EDT 2015')
+    result = instance.to_json('Tue Aug 25 15:57:37 EDT 2015')
 
     # Then the result should be a value
     result.should.equal(
-        '{"type": "DateTime", "value": "2015-08-25T15:57:37-04:00", "module": "repocket.attributes"}'
+        '{"module": "repocket.attributes", "type": "DateTime", "value": "2015-08-25T15:57:37+00:00"}'
     )

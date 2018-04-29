@@ -1,8 +1,10 @@
-import json
+import six
 import uuid
 import logging
 
 from repocket import attributes
+from repocket.attributes import force_bytes
+from repocket.compat import cast_bytes
 from repocket.connections import configure
 from repocket.registry import ActiveRecordRegistry
 
@@ -10,7 +12,7 @@ from repocket.registry import ActiveRecordRegistry
 logger = logging.getLogger("repocket.model")
 
 
-class ActiveRecord(object):
+class ActiveRecord(six.with_metaclass(ActiveRecordRegistry, object)):
     """base model class, this is how you declare your active record.
 
     ::
@@ -81,7 +83,7 @@ class ActiveRecord(object):
 
     @classmethod
     def _static_key_prefix(cls):
-        return b'repocket:{0}:{1}'.format(
+        return 'repocket:{0}:{1}'.format(
             cls.__namespace__,
             cls.__name__,
         )
@@ -90,16 +92,16 @@ class ActiveRecord(object):
         return getattr(self, self.__primary_key__, None)
 
     def _calculate_key_for_field(self, name):
-        return b':'.join([
+        return ':'.join([
             self._calculate_hash_key(),
             'field',
             name,
         ])
 
     def _calculate_hash_key(self):
-        return b':'.join([
-            bytes(self._key_prefix),
-            bytes(self._primary_key),
+        return ':'.join([
+            six.text_type(self._key_prefix),
+            six.text_type(self._primary_key),
         ])
 
     def _set_primary_key(self, value=None):
@@ -147,8 +149,8 @@ class ActiveRecord(object):
         conn = configure.get_connection()
         conn.append(redis_key, value)
 
-        old_value = getattr(self, field_name) or ''
-        new_value = bytes(old_value) + bytes(value)
+        old_value = getattr(self, field_name, bytes()) or bytes()
+        new_value = cast_bytes(old_value) + cast_bytes(value)
         setattr(self, field_name, new_value)
         return redis_key
 
@@ -164,7 +166,7 @@ class ActiveRecord(object):
 
         if isinstance(field, attributes.ByteStream):
             old_value = getattr(self, field_name, bytes()) or bytes()
-            value = bytes(old_value) + bytes(value)
+            value = force_bytes(old_value) + force_bytes(value)
 
         setattr(self, field_name, value)
 

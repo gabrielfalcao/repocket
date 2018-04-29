@@ -2,9 +2,11 @@
 
 from __future__ import unicode_literals
 import uuid
+from pendulum import Pendulum
 from datetime import datetime
 from repocket.model import ActiveRecord
 from repocket import attributes
+from repocket.compat import binary_type
 
 from .helpers import clean_slate
 
@@ -44,14 +46,16 @@ def test_save_user(context):
     result = context.connection.hgetall(key)
     result.should.be.a(dict)
     result.should.have.length_of(4)
-    result.should.have.key('email').being.equal(
-        '{"type": "Unicode", "value": "foo@bar.com", "module": "repocket.attributes"}')
-    result.should.have.key('github_metadata').being.equal(
-        '{"type": "JSON", "value": "{u\'yay\': u\'this is json baby!\'}", "module": "repocket.attributes"}')
-    result.should.have.key('id').being.a(str)
+    result.should.have.key(b'email').being.equal(
+        b'{"module": "repocket.attributes", "type": "Unicode", "value": "foo@bar.com"}'
+    )
+    result.should.have.key(b'github_metadata').being.equal(
+        b'{"module": "repocket.attributes", "type": "JSON", "value": "{\'yay\': \'this is json baby!\'}"}'
+    )
+    result.should.have.key(b'id').being.a(binary_type)
     obj1.to_dict(simple=True).should.equal({
-        'access_token': 'sometoken',
-        'email': u'foo@bar.com',
+        'access_token': b'sometoken',
+        'email': 'foo@bar.com',
         'github_metadata': {
             'yay': 'this is json baby!'
         },
@@ -145,10 +149,10 @@ def test_bytestream(context):
     body_key = keys['strings']['body']
     body_key.should.equal('repocket:tests.functional.test_active_record:BlogPost:{0}:field:body'.format(post.id))
     context.connection.get(body_key).should.equal(
-        'the initial content\n'
+        b'the initial content\n'
     )
     post.body.should.equal(
-        'the initial content\n'
+        b'the initial content\n'
     )
 
 
@@ -166,16 +170,16 @@ def test_bytestream_append(context):
 
     body_key.should.equal('repocket:tests.functional.test_active_record:BlogPost:{0}:field:body'.format(post.id))
     context.connection.get(body_key).should.equal(
-        'the initial content\nmore content\n'
+        b'the initial content\nmore content\n'
     )
     post.body.should.equal(
-        'the initial content\nmore content\n'
+        b'the initial content\nmore content\n'
     )
 
     result = BlogPost.objects.get(id=post.id)
     result.should.be.a(BlogPost)
     result.body.should.equal(
-        'the initial content\nmore content\n'
+        b'the initial content\nmore content\n'
     )
 
 
@@ -197,8 +201,8 @@ def test_pointer_saves_reference(context):
     key = keys['hash']
     result = context.connection.hgetall(key)
 
-    result.should.have.key('author').being.equal(
-        '{"type": "Pointer", "value": "repocket:tests.functional.test_active_record:User:b9c9bf17-ef60-45bf-8217-4daabc6bc483", "module": "repocket.attributes"}'
+    result.should.have.key(b'author').being.equal(
+        b'{"module": "repocket.attributes", "type": "Pointer", "value": "repocket:tests.functional.test_active_record:User:b9c9bf17-ef60-45bf-8217-4daabc6bc483"}'
     )
 
     post.author.should.equal(author)
@@ -246,7 +250,7 @@ def test_get_retrieving_reference(context):
     post = BlogPost(
         body='the initial content\n',
         author=author,
-        created_at=datetime(2015, 2, 25),
+        created_at=Pendulum(2015, 2, 25),
     )
 
     post.save()
@@ -286,7 +290,7 @@ def test_to_simple_dict(context):
     result = author.to_dict(simple=True)
 
     result.should.equal({
-        'access_token': '',
+        'access_token': b'',
         'email': u'foo@bar.com',
         'github_metadata': u'',
         'id': u'b9c9bf17-ef60-45bf-8217-4daabc6bc483'

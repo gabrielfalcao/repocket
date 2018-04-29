@@ -1,22 +1,46 @@
 # -*- coding: utf-8 -*-
-import json
+
+import datetime
 import importlib
 import logging
-import dateutil.parser
+import pendulum
 
 from uuid import UUID as PythonsUUID
-from datetime import datetime
 
 from decimal import Decimal as PythonsDecimal
-from six import text_type, binary_type
+from repocket.compat import text_type
+from repocket.compat import binary_type
+from repocket.compat import string_types
+from repocket.compat import cast_bytes
+from repocket.compat import cast_string
+
 from repocket._cache import MODELS
 from repocket.util import is_null
+from repocket.serialization import json
+
 
 logger = logging.getLogger("repocket.attributes")
 
 
+def force_bytes(s, encoding='utf-8'):
+    return cast_bytes(s, encoding)
+
+
+def force_unicode(s, encoding='utf-8'):
+    return cast_string(s, encoding)
+
+
 def get_current_time(field):
-    return datetime.utcnow()
+    return pendulum.utcnow()
+
+
+def ensure_encoding(s, encoding='utf-8'):
+    if isinstance(s, binary_type):
+        return text_type(s, encoding)
+    # elif isinstance(s, text_type):
+    #     return s.encode(encoding)
+
+    return s
 
 
 class Attribute(object):
@@ -25,7 +49,7 @@ class Attribute(object):
     serialize the type safely.
 
     """
-    __base_type__ = text_type
+    __base_type__ = binary_type
     __empty_value__ = b''
 
     def __init__(self, null=False, default=None, encoding='utf-8'):
@@ -36,10 +60,8 @@ class Attribute(object):
     def to_string(self, value):
         """Utility method that knows how to safely convert the value into a string"""
         converted = self.cast(value)
-        if isinstance(converted, text_type):
-            converted = converted.encode(self.encoding)
 
-        return binary_type(converted)
+        return force_bytes(converted).decode('ascii')
 
     def from_string(self, value):
         return self.cast(value)
@@ -59,7 +81,7 @@ class Attribute(object):
     @classmethod
     def cast(cls, value):
         """Casts the attribute value as the defined __base_type__."""
-        return cls.__base_type__(value)
+        return force_bytes(value)
 
     def to_python(self, value, simple=False):
         """
@@ -80,8 +102,8 @@ class Attribute(object):
 
     @classmethod
     def from_python(cls, data):
-        type_name = data['type']
-        module_name = data['module']
+        type_name = ensure_encoding(data['type'])
+        module_name = ensure_encoding(data['module'])
         raw_value = data['value']
         module = importlib.import_module(module_name)
         attribute = getattr(module, type_name)
@@ -99,7 +121,7 @@ class Attribute(object):
 
     def to_json(self, value, simple=False):
         data = self.to_python(value, simple=simple)
-        return json.dumps(data, default=binary_type)
+        return json.dumps(data, default=text_type, sort_keys=True)
 
 
 class UUID(Attribute):
@@ -117,9 +139,15 @@ class UUID(Attribute):
             return
 
         try:
-            return cls.__base_type__(value)
+            return cls.__base_type__(force_bytes(value).decode('ascii'))
         except ValueError as e:
             raise ValueError(": ".join([str(e), repr(value)]))
+
+    def to_string(self, value):
+        if isinstance(value, string_types):
+            return value
+
+        return bytes(value.hex, 'ascii')
 
 
 class AutoUUID(UUID):
@@ -136,15 +164,15 @@ class Unicode(Attribute):
     encoding = 'utf-8'
 
     __base_type__ = text_type
-    __empty_value__ = u''
-
-    def to_string(self, value):
-        return super(Unicode, self).to_string(text_type(value, self.encoding))
+    __empty_value__ = ''
 
     @classmethod
     def cast(cls, value):
         """Casts the attribute value :py:class:`Unicode`"""
-        return cls.__base_type__(value, cls.encoding)
+        return force_unicode(value)
+
+    def to_string(self, value):
+        return force_unicode(value)
 
 
 class Bytes(Attribute):
@@ -189,7 +217,7 @@ class JSON(Unicode):
 
     @classmethod
     def cast(cls, value):
-        if not isinstance(value, basestring):
+        if not isinstance(value, string_types):
             return value
 
         try:
@@ -204,28 +232,32 @@ class DateTime(Attribute):
     serialize the type safely.
 
     """
-    __base_type__ = datetime
+    __base_type__ = pendulum.Pendulum
     __empty_value__ = None
+    timezone = 'UTC'
 
     def __init__(self, auto_now=False, null=False):
         super(DateTime, self).__init__(null=null)
         self.auto_now = False
 
     @classmethod
-    def cast(cls, value):
+    def cast(cls, value, timezone=None):
         if is_null(value):
             return
 
-        if isinstance(value, datetime):
+        if isinstance(value, (datetime.datetime, pendulum.Pendulum)):
             return value
 
-        return dateutil.parser.parse(value)
+        elif isinstance(value, string_types):
+            return pendulum.parse(value)
+
+        raise TypeError('')
 
     def to_string(self, value):
         if not value:
             return json.dumps(None)
 
-        return self.cast(value).isoformat()
+        return text_type(self.cast(value))
 
 
 class Pointer(Attribute):

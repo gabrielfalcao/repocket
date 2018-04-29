@@ -2,6 +2,8 @@
 
 import logging
 
+from repocket.compat import cast_bytes
+from repocket.compat import cast_string
 from repocket.connections import configure
 from repocket.attributes import Attribute
 
@@ -20,7 +22,7 @@ class ActiveRecordManager(object):
         instance.set(instance.__primary_key__, id)
 
         prefix = instance._static_key_prefix()
-        redis_key = ':'.join([prefix, str(id)])
+        redis_key = ':'.join([prefix, cast_string(id)])
         return self.get_item_from_redis_key(redis_key)
 
     def filter(self, **kw):
@@ -44,7 +46,7 @@ class ActiveRecordManager(object):
         prefix = self.model._static_key_prefix()
         search_pattern = ':'.join([prefix, '*'])
 
-        keys = conn.keys(search_pattern)
+        keys = map(cast_string, conn.keys(search_pattern))
         items = [self.get_item_from_redis_key(k) for k in filter(lambda x: ':field:' not in x, keys)]
         return items
 
@@ -57,7 +59,7 @@ class ActiveRecordManager(object):
 
     def get_item_from_redis_key(self, key, connection=None):
         conn = connection or configure.get_connection()
-        raw = self.get_raw_dict_from_redis(key)
+        raw = self.get_raw_dict_from_redis(cast_bytes(key))
         if not raw:
             return
 
@@ -72,7 +74,7 @@ class ActiveRecordManager(object):
 
     def deserialize_raw_item(self, raw_item):
         data = {}
-        for key, raw_value in raw_item.iteritems():
+        for key, raw_value in raw_item.items():
             try:
                 value = Attribute.from_json(raw_value)
             except TypeError as e:
@@ -83,6 +85,6 @@ class ActiveRecordManager(object):
                 ))
                 raise
 
-            data[key] = value
+            data[cast_string(key)] = value
 
         return data
