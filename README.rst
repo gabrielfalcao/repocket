@@ -43,7 +43,7 @@ Quick Usage
 ===========
 
 
-::
+.. code:: bash
 
    $ pip install repocket
 
@@ -53,71 +53,70 @@ Declare your models
 ^^^^^^^^^^^^^^^^^^^
 
 
-::
+.. code:: python
 
-    >>> from repocket import attributes
-    >>> from repocket import ActiveRecord
-    >>>
-    >>>
-    >>> class User(ActiveRecord):
-    ...     name = attributes.Unicode()
-    ...     house_name = attributes.Unicode()
-    ...     email = attributes.Bytes()
-    ...     password = attributes.Bytes()
-    ...     metadata = attributes.JSON()
+    from repocket import attributes
+    from repocket import ActiveRecord
+
+
+    class User(ActiveRecord):
+        name = attributes.Unicode()
+        house_name = attributes.Unicode()
+        email = attributes.Bytes()
+        password = attributes.Bytes()
+        metadata = attributes.JSON()
 
 
 Persist in redis
 ^^^^^^^^^^^^^^^^
 
-::
+.. code:: python
 
-    >>> import bcrypt
+    import bcrypt
 
-    >>> harry = User(
-    ...     id='970773fa-4de1-11e5-86f4-6c4008a70392',
-    ...     name='Harry Potter',
-    ...     email='harry@hogwards.uk',
-    ...     house_name='Gryffindor',
-    ...     password=bcrypt.hashpw(b'hermione42', bcrypt.gensalt(10)),
-    ...     metadata={
-    ...         'known_tricks': [
-    ...             "Protego",
-    ...             "Expelliarmus",
-    ...             "Wingardium Leviosa",
-    ...             "Expecto Patronum"
-    ...         ]
-    ...     }
-    ... )
-    >>> redis_keys_for_harry = harry.save()
-    >>>
-    >>> ron = User.create(
-    ...     id='40997aa4-71fc-4ad3-b0d7-04c0fac6d6d8',
-    ...     name='Ron Weasley',
-    ...     house_name='Gryffindor',
-    ...     email='ron@hogwards.uk',
-    ...     password=bcrypt.hashpw(b'hermione42', bcrypt.gensalt(10)),
-    ...     metadata={
-    ...         'known_tricks': [
-    ...             "Protego",
-    ...             "Expelliarmus",
-    ...         ]
-    ...     }
-    ... )
+    harry = User(
+        id='970773fa-4de1-11e5-86f4-6c4008a70392',
+        name='Harry Potter',
+        email='harry@hogwards.uk',
+        house_name='Gryffindor',
+        password=bcrypt.hashpw(b'hermione42', bcrypt.gensalt(10)),
+        metadata={
+            'known_tricks': [
+                "Protego",
+                "Expelliarmus",
+                "Wingardium Leviosa",
+                "Expecto Patronum"
+            ]
+        }
+    )
+    redis_keys_for_harry = harry.save()
+        ron = User.create(
+        id='40997aa4-71fc-4ad3-b0d7-04c0fac6d6d8',
+        name='Ron Weasley',
+        house_name='Gryffindor',
+        email='ron@hogwards.uk',
+        password=bcrypt.hashpw(b'hermione42', bcrypt.gensalt(10)),
+        metadata={
+            'known_tricks': [
+                "Protego",
+                "Expelliarmus",
+            ]
+        }
+    )
 
 
 Query
 ^^^^^
 
-::
+.. code:: python
 
-    >>> harry = User.objects.get(id='970773fa-4de1-11e5-86f4-6c4008a70392')
-    >>> harry.metadata
+    harry = User.objects.get(id='970773fa-4de1-11e5-86f4-6c4008a70392')
+    harry.metadata
 
-    >>> results = User.objects.filter(house_name='Griffindor')
-    >>> len(results)
-    >>> results[0] == harry
+    results = User.objects.filter(house_name='Griffindor')
+    len(results)
+    results[0] == harry
     True
 
-    >>> results[1] == ron
+    results[1] == ron
     True
