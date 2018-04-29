@@ -1,7 +1,7 @@
 Repocket
 ########
 
-Simple active record for redis. Drop-in replacement for CQLEngine
+Simple active record for redis. Drop-in replacement for CQLEngine.
 
 .. image:: https://readthedocs.org/projects/repocket/badge/?version=latest
    :target: http://repocket.readthedocs.io/en/latest/?badge=latest
