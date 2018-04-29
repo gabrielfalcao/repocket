@@ -1,32 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import ast
+import io
 import os
 from setuptools import setup, find_packages
 
 
-local_file = lambda *f: \
-    open(os.path.join(os.path.dirname(__file__), *f)).read()
-
-
-class VersionFinder(ast.NodeVisitor):
-    VARIABLE_NAME = 'version'
-
-    def __init__(self):
-        self.version = None
-
-    def visit_Assign(self, node):
-        try:
-            if node.targets[0].id == self.VARIABLE_NAME:
-                self.version = node.value.s
-        except:
-            pass
-
-
 def read_version():
-    finder = VersionFinder()
-    finder.visit(ast.parse(local_file('repocket', 'version.py')))
-    return finder.version
+    ctx = {}
+    exec(local_file('httpretty', 'version.py'), ctx)
+    return ctx['version']
+
+
+local_file = lambda *f: \
+    io.open(os.path.join(os.path.dirname(__file__), *f), encoding='utf-8').read()
 
 
 requirements = [
@@ -39,6 +25,7 @@ setup(
     name='repocket',
     version='0.1.29',
     description='simple active record for redis',
+    long_description=local_file('README.rst'),
     entry_points={
         'console_scripts': ['repocket = repocket.cli:main'],
     },

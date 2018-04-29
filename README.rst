@@ -4,6 +4,13 @@ Repocket
 Simple active record for redis. Drop-in replacement for CQLEngine
 
 .. image:: https://readthedocs.org/projects/repocket/badge/?version=latest
+   :target: http://repocket.readthedocs.io/en/latest/?badge=latest
+.. image:: https://travis-ci.org/gabrielfalcao/repocket.svg?branch=master
+   :target: https://travis-ci.org/gabrielfalcao/repocket
+.. image:: https://img.shields.io/pypi/pyversions/repocket.svg
+   :target: https://pypi.python.org/pypi/repocket
+.. image:: https://badges.gitter.im/gabrielfalcao/repocket.svg
+   :target: https://gitter.im/gabrielfalcao/repocket?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 
 Why
