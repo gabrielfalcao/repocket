@@ -25,6 +25,7 @@ nose = "*"
 rednose = "*"
 mock = "*"
 coverage = "*"
+"flake8" = "*"
 
 
 [requires]

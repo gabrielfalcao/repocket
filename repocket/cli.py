@@ -7,7 +7,8 @@ from repocket.version import version
 
 
 def main():
-    print "RePocket {0}".format(version)
+    print("RePocket {0}".format(version))
+
 
 if __name__ == '__main__':
     main()

@@ -6,11 +6,14 @@ else
 OPEN_COMMAND		:= open
 endif
 
-test: clean unit functional
+test: clean lint unit functional
 
 deps:
 	@(2>&1 which pipenv > /dev/null) || pip install pipenv
 	@pipenv install --dev
+
+lint:
+	@flake8 repocket
 
 unit:
 	@pipenv run nosetests -x -v -s --rednose --with-coverage --cover-erase --cover-package=repocket tests/unit
@@ -22,7 +25,8 @@ clean:
 	@rm -rf sandbox dist
 	@git clean -Xdf
 
-release: clean
+release: tests
+	@./.release
 	@rm -rf dist
 	@pipenv run python setup.py sdist
 	@pipenv run twine upload dist/*.tar.gz
